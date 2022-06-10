@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "NIN",
+    "IPI",
+    "NIN"
+  ],
+  "key": {
+    "N": { "item": "minecraft:iron_nugget" },
+    "I": { "item": "minecraft:iron_ingot" },
+    "P": { "item": "enderio-reforged:infinity_powder" }
+  },
+  "result": {
+    "item": "enderio-reforged:iron_gear"
+  }
+}

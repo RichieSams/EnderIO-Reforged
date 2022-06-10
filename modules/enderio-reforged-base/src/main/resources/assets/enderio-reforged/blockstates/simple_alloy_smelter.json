@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "enderio-reforged:block/simple_alloy_smelter",
+      "y": 270
+    },
+    "facing=east": {
+      "model": "enderio-reforged:block/simple_alloy_smelter"
+    },
+    "facing=south": {
+      "model": "enderio-reforged:block/simple_alloy_smelter",
+      "y": 90
+    },
+    "facing=west": {
+      "model": "enderio-reforged:block/simple_alloy_smelter",
+      "y": 180
+    }
+  }
+}

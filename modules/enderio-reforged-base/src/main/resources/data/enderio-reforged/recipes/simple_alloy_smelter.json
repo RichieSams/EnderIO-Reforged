@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "III",
+    "FCF",
+    "GBG"
+  ],
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "F": { "item": "minecraft:furnace" },
+    "C": { "item": "enderio-reforged:simple_machine_chassis" },
+    "G": { "item": "enderio-reforged:stone_gear" },
+    "B": { "item": "minecraft:bucket" }
+  },
+  "result": {
+    "item": "enderio-reforged:simple_alloy_smelter"
+  }
+}

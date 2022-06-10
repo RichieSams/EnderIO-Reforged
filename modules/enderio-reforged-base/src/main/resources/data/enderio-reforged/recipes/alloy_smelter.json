@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "DFD",
+    "FCF",
+    "GWG"
+  ],
+  "key": {
+    "D": { "item": "enderio-reforged:dark_steel_ingot" },
+    "F": { "item": "minecraft:furnace" },
+    "C": { "item": "enderio-reforged:industrial_machine_chassis" },
+    "G": { "item": "enderio-reforged:dark_steel_gear" },
+    "W": { "item": "minecraft:cauldron" }
+  },
+  "result": {
+    "item": "enderio-reforged:alloy_smelter"
+  }
+}

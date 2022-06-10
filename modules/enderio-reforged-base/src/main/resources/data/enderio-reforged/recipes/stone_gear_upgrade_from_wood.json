@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " C ",
+    "CGC",
+    " C "
+  ],
+  "key": {
+    "C": { "tag": "minecraft:stone_crafting_materials" },
+    "G": { "item": "enderio-reforged:wood_gear" }
+  },
+  "result": {
+    "item": "enderio-reforged:stone_gear"
+  }
+}

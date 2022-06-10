@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "NNN",
+    "NIN",
+    "NNN"
+  ],
+  "key": {
+    "N": { "item": "enderio-reforged:dark_steel_nugget" },
+    "I": { "item": "enderio-reforged:iron_gear" }
+  },
+  "result": {
+    "item": "enderio-reforged:dark_steel_gear"
+  }
+}

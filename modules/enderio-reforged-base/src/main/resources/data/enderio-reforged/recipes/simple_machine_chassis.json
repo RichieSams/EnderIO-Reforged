@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "BIB",
+    "IPI",
+    "BIB"
+  ],
+  "key": {
+    "B": { "item": "minecraft:iron_bars" },
+    "I": { "item": "minecraft:iron_ingot" },
+    "P": { "item": "enderio-reforged:infinity_powder" }
+  },
+  "result": {
+    "item": "enderio-reforged:simple_machine_chassis"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "enderio-reforged:dark_steel_ingot"
+    }
+  ],
+  "result": {
+    "item": "enderio-reforged:dark_steel_nugget",
+    "count": 9
+  }
+}

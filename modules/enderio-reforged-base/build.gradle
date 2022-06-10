@@ -1,0 +1,4 @@
+archivesBaseName = "enderio-reforged-base"
+version = getSubprojectVersion(project)
+
+testDependencies(project, [])

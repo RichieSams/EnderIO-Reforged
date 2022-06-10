@@ -1,0 +1,36 @@
+
+{
+  "schemaVersion": 1,
+  "id": "enderio-reforged-base",
+  "version": "${version}",
+
+  "name": "EnderIO Reforged",
+  "description": "This is an example description! Tell everyone what your mod is about!",
+  "authors": [
+    "RichieSams"
+  ],
+  "contact": {
+    "homepage": "https://fabricmc.net/",
+    "sources": "https://github.com/FabricMC/fabric-example-mod"
+  },
+
+  "license": "Apache-2.0",
+  "icon": "assets/enderio-reforged-base/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "richiesams.enderio.reforged.EnderIOReforgedBaseMod"
+    ]
+  },
+
+  "depends": {
+    "fabricloader": ">=0.14.6",
+    "fabric": "*",
+    "minecraft": "~1.18.2",
+    "java": ">=17"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}

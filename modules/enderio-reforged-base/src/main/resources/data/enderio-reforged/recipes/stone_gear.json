@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SCS",
+    "C C",
+    "SCS"
+  ],
+  "key": {
+    "S": { "item": "minecraft:stick" },
+    "C": { "tag": "minecraft:stone_crafting_materials" }
+  },
+  "result": {
+    "item": "enderio-reforged:stone_gear"
+  }
+}
