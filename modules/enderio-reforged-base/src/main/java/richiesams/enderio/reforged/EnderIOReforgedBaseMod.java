@@ -3,6 +3,7 @@ package richiesams.enderio.reforged;
 import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import richiesams.enderio.reforged.blockentities.ModBlockEntities;
 import richiesams.enderio.reforged.blocks.ModBlocks;
 import richiesams.enderio.reforged.items.ModItems;
 
@@ -21,7 +22,8 @@ public class EnderIOReforgedBaseMod implements ModInitializer {
 
         LOGGER.info("Hello world from EnderIO Reforged Base");
 
-        ModItems.RegisterModItems();
-        ModBlocks.RegisterModBlocks();
+        ModItems.registerModItems();
+        ModBlocks.registerModBlocks();
+        ModBlockEntities.registerAllBlockEntities();
     }
 }

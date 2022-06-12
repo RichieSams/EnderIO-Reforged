@@ -14,10 +14,10 @@ import richiesams.enderio.reforged.items.ModItemGroup;
 
 public class ModBlocks {
     public static final Block SIMPLE_ALLOY_SMELTER = registerBlock("simple_alloy_smelter",
-            new MachineBlock(FabricBlockSettings.of(Material.METAL).strength(6f)), ModItemGroup.ENDERIO_REFORGED);
+            new SimpleAlloySmelterBlock(FabricBlockSettings.of(Material.METAL).strength(6f)), ModItemGroup.ENDERIO_REFORGED);
 
     public static final Block ALLOY_SMELTER = registerBlock("alloy_smelter",
-            new MachineBlock(FabricBlockSettings.of(Material.METAL).strength(6f)), ModItemGroup.ENDERIO_REFORGED);
+            new AlloySmelterBlock(FabricBlockSettings.of(Material.METAL).strength(6f)), ModItemGroup.ENDERIO_REFORGED);
 
     private static Block registerBlock(String name, Block block, ItemGroup group) {
         registerBlockItem(name, block, group);
@@ -29,7 +29,7 @@ public class ModBlocks {
                 new BlockItem(block, new FabricItemSettings().group(group)));
     }
 
-    public static void RegisterModBlocks() {
+    public static void registerModBlocks() {
         EnderIOReforgedBaseMod.LOGGER.info("Registering Mod Blocks for " + EnderIOReforgedBaseMod.MOD_ID + "-base");
     }
 }

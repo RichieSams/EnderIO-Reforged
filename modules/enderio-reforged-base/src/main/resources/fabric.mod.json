@@ -21,6 +21,9 @@
   "entrypoints": {
     "main": [
       "richiesams.enderio.reforged.EnderIOReforgedBaseMod"
+    ],
+    "client": [
+      "richiesams.enderio.reforged.EnderIOReforgedBaseClientMod"
     ]
   },
 

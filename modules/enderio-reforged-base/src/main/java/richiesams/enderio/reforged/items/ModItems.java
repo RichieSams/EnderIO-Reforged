@@ -33,7 +33,7 @@ public class ModItems {
         return Registry.register(Registry.ITEM, new Identifier(EnderIOReforgedBaseMod.MOD_ID, name), item);
     }
 
-    public static void RegisterModItems() {
+    public static void registerModItems() {
         EnderIOReforgedBaseMod.LOGGER.info("Registering Mod Items for " + EnderIOReforgedBaseMod.MOD_ID + "-base");
     }
 }
