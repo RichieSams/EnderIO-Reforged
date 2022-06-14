@@ -1,0 +1,18 @@
+{
+  "type": "enderio-reforged:alloying",
+  "ingredients": [
+    {
+      "item": "minecraft:iron_ingot"
+    },
+    {
+      "item": "enderio-reforged:coal_powder"
+    },
+    {
+      "item": "minecraft:iron_ingot"
+    }
+  ],
+  "result": {
+    "item": "enderio-reforged:dark_steel_ingot",
+    "count": 1
+  }
+}

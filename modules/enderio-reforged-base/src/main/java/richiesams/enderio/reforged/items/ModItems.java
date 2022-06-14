@@ -10,6 +10,8 @@ import richiesams.enderio.reforged.EnderIOReforgedBaseMod;
 public class ModItems {
     public static Item YETA_WRENCH = registerItem("yeta_wrench",
             new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
+    public static Item COAL_POWDER = registerItem("coal_powder",
+            new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
     public static Item DARK_STEEL_INGOT = registerItem("dark_steel_ingot",
             new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
     public static Item DARK_STEEL_NUGGET = registerItem("dark_steel_nugget",

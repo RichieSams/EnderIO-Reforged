@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import richiesams.enderio.reforged.blockentities.ModBlockEntities;
 import richiesams.enderio.reforged.blocks.ModBlocks;
 import richiesams.enderio.reforged.items.ModItems;
+import richiesams.enderio.reforged.recipes.ModRecipes;
 
 public class EnderIOReforgedBaseMod implements ModInitializer {
     // This logger is used to write text to the console and the log file.
@@ -25,5 +26,6 @@ public class EnderIOReforgedBaseMod implements ModInitializer {
         ModItems.registerModItems();
         ModBlocks.registerModBlocks();
         ModBlockEntities.registerAllBlockEntities();
+        ModRecipes.registerRecipes();
     }
 }

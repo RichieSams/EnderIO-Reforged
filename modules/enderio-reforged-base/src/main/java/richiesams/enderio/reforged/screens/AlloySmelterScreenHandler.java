@@ -1,18 +1,13 @@
 package richiesams.enderio.reforged.screens;
 
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import richiesams.enderio.reforged.blockentities.AlloySmelterBlockEntity;
 import richiesams.enderio.reforged.screens.slots.ModResultSlot;
 
-public class AlloySmelterScreenHandler extends ScreenHandler {
-    private final Inventory inventory;
-
+public class AlloySmelterScreenHandler extends MachineScreenHandler {
     private static final int capacitorOffsetX = 12;
     private static final int capacitorOffsetY = 60;
     private static final int inputSlot0OffsetX = 54;
@@ -27,7 +22,6 @@ public class AlloySmelterScreenHandler extends ScreenHandler {
     private static final int playerInventoryOffsetY = 84;
     private static final int playerHotbarOffsetX = 8;
     private static final int playerHotbarOffsetY = 142;
-    private static final int slotTotalSize = 18;
 
 
     public AlloySmelterScreenHandler(int syncId, PlayerInventory playerInventory) {
@@ -35,67 +29,16 @@ public class AlloySmelterScreenHandler extends ScreenHandler {
     }
 
     public AlloySmelterScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory) {
-        super(ModScreenHandlers.ALLOY_SMELTER_SCREEN_HANDLER, syncId);
-        checkSize(inventory, AlloySmelterBlockEntity.TotalSlots);
-        this.inventory = inventory;
-        inventory.onOpen(playerInventory.player);
+        super(ModScreenHandlers.ALLOY_SMELTER_SCREEN_HANDLER, syncId, playerInventory, inventory, AlloySmelterBlockEntity.TotalSlots);
 
+        this.addSlot(new Slot(inventory, AlloySmelterBlockEntity.Input0Slot, inputSlot0OffsetX, inputslot0OffsetY));
+        this.addSlot(new Slot(inventory, AlloySmelterBlockEntity.Input1Slot, inputSlot1OffsetX, inputslot1OffsetY));
+        this.addSlot(new Slot(inventory, AlloySmelterBlockEntity.Input2Slot, inputSlot2OffsetX, inputslot2OffsetY));
+        this.addSlot(new ModResultSlot(inventory, AlloySmelterBlockEntity.OutputSlot, outputOffsetX, outputOffsetY));
         // TODO: Make a "CapacitorSlot" class to restrict the types allowed in the capacitor slot
         this.addSlot(new Slot(inventory, AlloySmelterBlockEntity.CapacitorSlot, capacitorOffsetX, capacitorOffsetY));
-        this.addSlot(new Slot(inventory, AlloySmelterBlockEntity.InputSlot0, inputSlot0OffsetX, inputslot0OffsetY));
-        this.addSlot(new Slot(inventory, AlloySmelterBlockEntity.InputSlot1, inputSlot1OffsetX, inputslot1OffsetY));
-        this.addSlot(new Slot(inventory, AlloySmelterBlockEntity.InputSlot2, inputSlot2OffsetX, inputslot2OffsetY));
-        this.addSlot(new ModResultSlot(inventory, AlloySmelterBlockEntity.OutputSlot, outputOffsetX, outputOffsetY));
 
-        addPlayerInventory(playerInventory);
-        addPlayerHotbar(playerInventory);
-    }
-
-    @Override
-    public boolean canUse(PlayerEntity player) {
-        return this.inventory.canPlayerUse(player);
-    }
-
-    @Override
-    public ItemStack transferSlot(PlayerEntity player, int invSlot) {
-        ItemStack newStack = ItemStack.EMPTY;
-        Slot slot = this.slots.get(invSlot);
-        if (slot != null && slot.hasStack()) {
-            ItemStack originalStack = slot.getStack();
-            newStack = originalStack.copy();
-            if (invSlot < this.inventory.size()) {
-                if (!this.insertItem(originalStack, this.inventory.size(), this.slots.size(), true)) {
-                    return ItemStack.EMPTY;
-                }
-            } else if (!this.insertItem(originalStack, 0, this.inventory.size(), false)) {
-                return ItemStack.EMPTY;
-            }
-
-            if (originalStack.isEmpty()) {
-                slot.setStack(ItemStack.EMPTY);
-            } else {
-                slot.markDirty();
-            }
-        }
-
-        return newStack;
-    }
-
-    private void addPlayerInventory(PlayerInventory playerInventory) {
-        for (int y = 0; y < 3; ++y) {
-            for (int x = 0; x < 9; ++x) {
-                this.addSlot(new Slot(
-                        playerInventory,
-                        x + y * 9 + 9,
-                        playerInventoryOffsetX + x * slotTotalSize,
-                        playerInventoryOffsetY + y * 18));
-            }
-        }
-    }
-
-    private void addPlayerHotbar(PlayerInventory playerInventory) {
-        for (int i = 0; i < 9; ++i) {
-            this.addSlot(new Slot(playerInventory, i, playerHotbarOffsetX + i * slotTotalSize, playerHotbarOffsetY));
-        }
+        addPlayerInventory(playerInventory, playerInventoryOffsetX, playerInventoryOffsetY);
+        addPlayerHotbar(playerInventory, playerHotbarOffsetX, playerHotbarOffsetY);
     }
 }
