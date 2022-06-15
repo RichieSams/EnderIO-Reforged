@@ -3,16 +3,21 @@ package richiesams.enderio.reforged.blockentities;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeManager;
 import net.minecraft.screen.ScreenHandler;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import richiesams.enderio.reforged.recipes.AlloyingRecipe;
 import richiesams.enderio.reforged.recipes.RecipeHelper;
+import richiesams.enderio.reforged.recipes.VanillaSmeltingRecipe;
 import richiesams.enderio.reforged.screens.AlloySmelterScreenHandler;
 
 import java.util.Optional;
@@ -25,55 +30,101 @@ public class AlloySmelterBlockEntity extends MachineBlockEntity {
     public static final int OutputSlot = 3;
     public static final int CapacitorSlot = 4;
 
+    private Recipe<Inventory> currentRecipe = null;
 
     public AlloySmelterBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.ALLOY_SMELTER, pos, state, DefaultedList.ofSize(TotalSlots, ItemStack.EMPTY));
     }
 
-    @Nullable
-    @Override
-    public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
-        return new AlloySmelterScreenHandler(syncId, inv, this);
-    }
-
     public static void tick(World world, BlockPos pos, BlockState state, AlloySmelterBlockEntity entity) {
-        // Check if there is a valid recipe for us to craft
-        // And if we have space in our output
-        SimpleInventory craftingInventory = new SimpleInventory(3);
-        craftingInventory.setStack(0, entity.getStack(Input0Slot));
-        craftingInventory.setStack(1, entity.getStack(Input1Slot));
-        craftingInventory.setStack(2, entity.getStack(Input2Slot));
-
-        RecipeManager manager = world.getRecipeManager();
-        Optional<AlloyingRecipe> alloyingMatch = manager.getFirstMatch(AlloyingRecipe.Type.INSTANCE, craftingInventory, world);
-        if (alloyingMatch.isPresent() && RecipeHelper.inventoryCanAcceptRecipeOutput(alloyingMatch.get(), entity, OutputSlot)) {
-            // Craft the alloy recipe
-            AlloyingRecipe recipe = alloyingMatch.get();
-
-            // Set the output
-            ItemStack craftingOutput = recipe.craft(craftingInventory);
-            ItemStack currentOutput = entity.getStack(OutputSlot);
-            if (currentOutput.isEmpty()) {
-                entity.setStack(OutputSlot, craftingOutput);
-            } else {
-                currentOutput.increment(craftingOutput.getCount());
-                entity.setStack(OutputSlot, currentOutput);
-            }
-
-            // Remove the inputs
-            RecipeHelper.craftRecipe(recipe, craftingInventory);
-            entity.setStack(Input0Slot, craftingInventory.getStack(0));
-            entity.setStack(Input1Slot, craftingInventory.getStack(1));
-            entity.setStack(Input2Slot, craftingInventory.getStack(2));
-
+        if (world == null || world.isClient) {
             return;
         }
 
-        // Next, we check for a regular Smelting recipe
-//        Optional<SmeltingRecipe> smeltingMatch = manager.getFirstMatch(RecipeType.SMELTING, inventory, world);
-//        if (smeltingMatch.isPresent()) {
-//            return smeltingMatch.get();
-//        }
-        return;
+        if (entity.currentRecipe == null) {
+            entity.updateRecipe(world);
+        }
+
+        if (entity.currentRecipe == null) {
+            return;
+        }
+
+        if (entity.progress < entity.progressTotal) {
+            ++entity.progress;
+        } else {
+            if (RecipeHelper.inventoryCanAcceptRecipeOutput(entity.currentRecipe, entity, OutputSlot)) {
+                // Set the output
+                ItemStack craftingOutput = entity.currentRecipe.craft(new SimpleInventory());
+                ItemStack currentOutput = entity.getStack(OutputSlot);
+                if (currentOutput.isEmpty()) {
+                    entity.setStack(OutputSlot, craftingOutput);
+                } else {
+                    currentOutput.increment(craftingOutput.getCount());
+                    entity.setStack(OutputSlot, currentOutput);
+                }
+
+                // Reset
+                entity.progress = 0;
+                entity.progressTotal = 0;
+                entity.currentRecipe = null;
+            }
+        }
+    }
+
+    private void updateRecipe(World world) {
+        SimpleInventory testInventory = new SimpleInventory(3);
+        testInventory.setStack(0, getStack(Input0Slot));
+        testInventory.setStack(1, getStack(Input1Slot));
+        testInventory.setStack(2, getStack(Input2Slot));
+
+        RecipeManager manager = world.getRecipeManager();
+        Optional<AlloyingRecipe> alloyingRecipe = manager.getFirstMatch(AlloyingRecipe.Type.INSTANCE, testInventory, world);
+        if (alloyingRecipe.isPresent() && RecipeHelper.inventoryCanAcceptRecipeOutput(alloyingRecipe.get(), this, OutputSlot)) {
+            currentRecipe = alloyingRecipe.get();
+            progress = 0;
+            progressTotal = alloyingRecipe.get().getCookTime();
+
+            // Remove the inputs
+            RecipeHelper.craftRecipeFromInventory(alloyingRecipe.get(), testInventory);
+            setStack(Input0Slot, testInventory.getStack(0));
+            setStack(Input1Slot, testInventory.getStack(1));
+            setStack(Input2Slot, testInventory.getStack(2));
+            updateState(true);
+            return;
+        }
+
+        ItemStack currentOutput = getStack(OutputSlot);
+        int maxStacks = getMaxCountPerStack();
+        if (!currentOutput.isEmpty()) {
+            maxStacks = Math.min(maxStacks, currentOutput.getMaxCount());
+        }
+
+        Optional<VanillaSmeltingRecipe> smeltingRecipe = VanillaSmeltingRecipe.getFirstMatch(world, testInventory, currentOutput, maxStacks);
+        if (smeltingRecipe.isPresent() && RecipeHelper.inventoryCanAcceptRecipeOutput(smeltingRecipe.get(), this, OutputSlot)) {
+            currentRecipe = smeltingRecipe.get();
+            progress = 0;
+            progressTotal = smeltingRecipe.get().getCookTime();
+
+            // Remove the inputs
+            RecipeHelper.craftRecipeFromInventory(smeltingRecipe.get(), testInventory);
+            setStack(Input0Slot, testInventory.getStack(0));
+            setStack(Input1Slot, testInventory.getStack(1));
+            setStack(Input2Slot, testInventory.getStack(2));
+            updateState(true);
+            return;
+        }
+
+        updateState(false);
+    }
+
+    @Override
+    public Text getDisplayName() {
+        return new TranslatableText("block.enderio-reforged.alloy_smelter");
+    }
+
+    @Nullable
+    @Override
+    public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
+        return new AlloySmelterScreenHandler(syncId, inv, this, this.propertyDelegate);
     }
 }

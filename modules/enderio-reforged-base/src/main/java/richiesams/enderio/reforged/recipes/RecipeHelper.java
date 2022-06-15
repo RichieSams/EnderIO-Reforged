@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 
 public class RecipeHelper {
-    public static <T extends Inventory> void craftRecipe(Recipe<T> recipe, T inventory) {
+    public static <T extends Inventory> void craftRecipeFromInventory(Recipe<T> recipe, T inventory) {
         DefaultedList<Ingredient> inputs = recipe.getIngredients();
 
         for (Ingredient input : inputs) {

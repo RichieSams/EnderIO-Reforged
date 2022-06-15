@@ -3,9 +3,11 @@ package richiesams.enderio.reforged.screens;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.screen.ArrayPropertyDelegate;
+import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.slot.Slot;
+import richiesams.enderio.reforged.blockentities.MachineBlockEntity;
 import richiesams.enderio.reforged.blockentities.SimpleAlloySmelterBlockEntity;
-import richiesams.enderio.reforged.recipes.AlloyingRecipe;
 import richiesams.enderio.reforged.screens.slots.ModResultSlot;
 
 public class SimpleAlloySmelterScreenHandler extends MachineScreenHandler {
@@ -24,16 +26,16 @@ public class SimpleAlloySmelterScreenHandler extends MachineScreenHandler {
 
 
     public SimpleAlloySmelterScreenHandler(int syncId, PlayerInventory playerInventory) {
-        this(syncId, playerInventory, new SimpleInventory(SimpleAlloySmelterBlockEntity.TotalSlots));
+        this(syncId, playerInventory, new SimpleInventory(SimpleAlloySmelterBlockEntity.TotalSlots), new ArrayPropertyDelegate(MachineBlockEntity.PropertyCount));
     }
 
-    public SimpleAlloySmelterScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory) {
-        super(ModScreenHandlers.SIMPLE_ALLOY_SMELTER_SCREEN_HANDLER, syncId, playerInventory, inventory, SimpleAlloySmelterBlockEntity.TotalSlots);
+    public SimpleAlloySmelterScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory, PropertyDelegate delegate) {
+        super(ModScreenHandlers.SIMPLE_ALLOY_SMELTER_SCREEN_HANDLER, syncId, playerInventory, inventory, SimpleAlloySmelterBlockEntity.TotalSlots, delegate);
 
-        this.addSlot(new Slot(inventory, AlloyingRecipe.Input0Index, inputSlot0OffsetX, inputslot0OffsetY));
-        this.addSlot(new Slot(inventory, AlloyingRecipe.Input1Index, inputSlot1OffsetX, inputslot1OffsetY));
-        this.addSlot(new Slot(inventory, AlloyingRecipe.Input2Index, inputSlot2OffsetX, inputslot2OffsetY));
-        this.addSlot(new ModResultSlot(inventory, AlloyingRecipe.OutputIndex, outputOffsetX, outputOffsetY));
+        this.addSlot(new Slot(inventory, SimpleAlloySmelterBlockEntity.Input0Slot, inputSlot0OffsetX, inputslot0OffsetY));
+        this.addSlot(new Slot(inventory, SimpleAlloySmelterBlockEntity.Input1Slot, inputSlot1OffsetX, inputslot1OffsetY));
+        this.addSlot(new Slot(inventory, SimpleAlloySmelterBlockEntity.Input2Slot, inputSlot2OffsetX, inputslot2OffsetY));
+        this.addSlot(new ModResultSlot(inventory, SimpleAlloySmelterBlockEntity.OutputSlot, outputOffsetX, outputOffsetY));
 
         addPlayerInventory(playerInventory, playerInventoryOffsetX, playerInventoryOffsetY);
         addPlayerHotbar(playerInventory, playerHotbarOffsetX, playerHotbarOffsetY);

@@ -3,8 +3,11 @@ package richiesams.enderio.reforged.screens;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.screen.ArrayPropertyDelegate;
+import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.slot.Slot;
 import richiesams.enderio.reforged.blockentities.AlloySmelterBlockEntity;
+import richiesams.enderio.reforged.blockentities.MachineBlockEntity;
 import richiesams.enderio.reforged.screens.slots.ModResultSlot;
 
 public class AlloySmelterScreenHandler extends MachineScreenHandler {
@@ -25,11 +28,11 @@ public class AlloySmelterScreenHandler extends MachineScreenHandler {
 
 
     public AlloySmelterScreenHandler(int syncId, PlayerInventory playerInventory) {
-        this(syncId, playerInventory, new SimpleInventory(AlloySmelterBlockEntity.TotalSlots));
+        this(syncId, playerInventory, new SimpleInventory(AlloySmelterBlockEntity.TotalSlots), new ArrayPropertyDelegate(MachineBlockEntity.PropertyCount));
     }
 
-    public AlloySmelterScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory) {
-        super(ModScreenHandlers.ALLOY_SMELTER_SCREEN_HANDLER, syncId, playerInventory, inventory, AlloySmelterBlockEntity.TotalSlots);
+    public AlloySmelterScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory, PropertyDelegate delegate) {
+        super(ModScreenHandlers.ALLOY_SMELTER_SCREEN_HANDLER, syncId, playerInventory, inventory, AlloySmelterBlockEntity.TotalSlots, delegate);
 
         this.addSlot(new Slot(inventory, AlloySmelterBlockEntity.Input0Slot, inputSlot0OffsetX, inputslot0OffsetY));
         this.addSlot(new Slot(inventory, AlloySmelterBlockEntity.Input1Slot, inputSlot1OffsetX, inputslot1OffsetY));
@@ -40,5 +43,16 @@ public class AlloySmelterScreenHandler extends MachineScreenHandler {
 
         addPlayerInventory(playerInventory, playerInventoryOffsetX, playerInventoryOffsetY);
         addPlayerHotbar(playerInventory, playerHotbarOffsetX, playerHotbarOffsetY);
+    }
+
+    public boolean isCrafting() {
+        return delegate.get(MachineBlockEntity.ProgressPropertyIndex) > 0;
+    }
+
+    public float getScaledProgress() {
+        int progress = delegate.get(MachineBlockEntity.ProgressPropertyIndex);
+        int progressTotal = delegate.get(MachineBlockEntity.ProgressTotalPropertyIndex);
+
+        return (float) progress / (float) progressTotal;
     }
 }

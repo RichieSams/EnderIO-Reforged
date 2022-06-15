@@ -2,10 +2,12 @@ package richiesams.enderio.reforged.blocks;
 
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.item.ItemStack;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.state.StateManager;
+import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.*;
@@ -13,14 +15,19 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import richiesams.enderio.reforged.blockentities.MachineBlockEntity;
 
 public abstract class MachineBlock extends BlockWithEntity implements BlockEntityProvider {
     public static final DirectionProperty FACING;
+    public static final BooleanProperty LIT;
 
     public MachineBlock(Settings settings) {
         super(settings);
-        setDefaultState(this.stateManager.getDefaultState().with(Properties.HORIZONTAL_FACING, Direction.NORTH));
+        BlockState defaultState = this.getStateManager().getDefaultState()
+                .with(Properties.HORIZONTAL_FACING, Direction.NORTH)
+                .with(Properties.LIT, false);
+        setDefaultState(defaultState);
     }
 
     public BlockState rotate(BlockState state, BlockRotation rotation) {
@@ -33,16 +40,29 @@ public abstract class MachineBlock extends BlockWithEntity implements BlockEntit
 
     static {
         FACING = Properties.HORIZONTAL_FACING;
+        LIT = Properties.LIT;
     }
 
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> stateManager) {
         stateManager.add(Properties.HORIZONTAL_FACING);
+        stateManager.add(Properties.LIT);
     }
 
     @Override
-    public BlockState getPlacementState(ItemPlacementContext ctx) {
-        return (BlockState) this.getDefaultState().with(Properties.HORIZONTAL_FACING, ctx.getPlayerFacing().getOpposite());
+    public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
+        super.onPlaced(world, pos, state, placer, itemStack);
+        setFacing(placer.getHorizontalFacing().getOpposite(), world, pos);
+    }
+
+    public void setFacing(Direction facing, World world, BlockPos pos) {
+        world.setBlockState(pos, world.getBlockState(pos).with(FACING, facing));
+    }
+
+    public void setLit(Boolean active, World world, BlockPos pos) {
+        Direction facing = world.getBlockState(pos).get(FACING);
+        BlockState state = world.getBlockState(pos).with(LIT, active).with(FACING, facing);
+        world.setBlockState(pos, state, Block.NOTIFY_ALL);
     }
 
     @Override

@@ -1,0 +1,6 @@
+{
+  "parent": "enderio-reforged:block/alloy_smelter",
+  "textures": {
+    "front": "enderio-reforged:block/alloy_smelter_front_lit"
+  }
+}

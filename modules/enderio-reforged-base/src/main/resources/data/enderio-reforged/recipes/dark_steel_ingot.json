@@ -8,11 +8,13 @@
       "item": "enderio-reforged:coal_powder"
     },
     {
-      "item": "minecraft:iron_ingot"
+      "item": "minecraft:obsidian"
     }
   ],
   "result": {
     "item": "enderio-reforged:dark_steel_ingot",
     "count": 1
-  }
+  },
+  "power": 6,
+  "time": 600
 }

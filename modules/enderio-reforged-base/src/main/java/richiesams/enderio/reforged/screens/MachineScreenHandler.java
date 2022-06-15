@@ -4,6 +4,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
@@ -13,12 +14,17 @@ public abstract class MachineScreenHandler extends ScreenHandler {
     private static final int slotStride = 18;
 
     private final Inventory inventory;
+    protected final PropertyDelegate delegate;
 
-    public MachineScreenHandler(@Nullable ScreenHandlerType<?> type, int syncId, PlayerInventory playerInventory, Inventory inventory, int internalSlotCount) {
+    public MachineScreenHandler(@Nullable ScreenHandlerType<?> type, int syncId, PlayerInventory playerInventory,
+                                Inventory inventory, int internalSlotCount, PropertyDelegate delegate) {
         super(type, syncId);
         checkSize(inventory, internalSlotCount);
         this.inventory = inventory;
         inventory.onOpen(playerInventory.player);
+        this.delegate = delegate;
+
+        addProperties(delegate);
     }
 
     @Override

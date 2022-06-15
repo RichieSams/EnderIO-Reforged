@@ -16,11 +16,15 @@ public class AlloyingRecipe implements Recipe<Inventory> {
     private final Identifier id;
     private final ItemStack output;
     private final DefaultedList<Ingredient> inputs;
+    private final int power;
+    private final int time;
 
-    public AlloyingRecipe(Identifier id, ItemStack output, DefaultedList<Ingredient> inputs) {
+    public AlloyingRecipe(Identifier id, ItemStack output, DefaultedList<Ingredient> inputs, int power, int time) {
         this.id = id;
         this.output = output;
         this.inputs = inputs;
+        this.power = power;
+        this.time = time;
     }
 
     @Override
@@ -53,6 +57,14 @@ public class AlloyingRecipe implements Recipe<Inventory> {
         return inputs;
     }
 
+    public int getCookTime() {
+        return time;
+    }
+
+    public int getEUPerTick() {
+        return power;
+    }
+
     @Override
     public RecipeSerializer<?> getSerializer() {
         return Serializer.INSTANCE;
@@ -83,7 +95,10 @@ public class AlloyingRecipe implements Recipe<Inventory> {
             }
             ItemStack output = ShapedRecipe.outputFromJson(JsonHelper.getObject(json, "result"));
 
-            return new AlloyingRecipe(id, output, inputs);
+            int power = JsonHelper.getInt(json, "power");
+            int time = JsonHelper.getInt(json, "time");
+
+            return new AlloyingRecipe(id, output, inputs, power, time);
         }
 
         private static DefaultedList<Ingredient> getIngredients(JsonArray json) {
@@ -107,7 +122,10 @@ public class AlloyingRecipe implements Recipe<Inventory> {
 
             ItemStack output = buf.readItemStack();
 
-            return new AlloyingRecipe(id, output, inputs);
+            int power = buf.readInt();
+            int time = buf.readInt();
+
+            return new AlloyingRecipe(id, output, inputs, power, time);
         }
 
         @Override
@@ -117,7 +135,11 @@ public class AlloyingRecipe implements Recipe<Inventory> {
             for (Ingredient input : inputs) {
                 input.write(buf);
             }
+
             buf.writeItemStack(recipe.getOutput());
+
+            buf.writeInt(recipe.power);
+            buf.writeInt(recipe.time);
         }
     }
 }

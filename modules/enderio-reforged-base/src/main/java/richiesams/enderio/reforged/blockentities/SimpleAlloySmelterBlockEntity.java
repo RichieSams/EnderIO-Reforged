@@ -7,6 +7,8 @@ import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.RecipeManager;
 import net.minecraft.screen.ScreenHandler;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -19,10 +21,10 @@ import java.util.Optional;
 
 public class SimpleAlloySmelterBlockEntity extends MachineBlockEntity {
     public static final int TotalSlots = 4;
-    private static final int Input0Slot = 0;
-    private static final int Input1Slot = 1;
-    private static final int Input2Slot = 2;
-    private static final int OutputSlot = 3;
+    public static final int Input0Slot = 0;
+    public static final int Input1Slot = 1;
+    public static final int Input2Slot = 2;
+    public static final int OutputSlot = 3;
 
 
     public SimpleAlloySmelterBlockEntity(BlockPos pos, BlockState state) {
@@ -32,7 +34,7 @@ public class SimpleAlloySmelterBlockEntity extends MachineBlockEntity {
     @Nullable
     @Override
     public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
-        return new SimpleAlloySmelterScreenHandler(syncId, inv, this);
+        return new SimpleAlloySmelterScreenHandler(syncId, inv, this, this.propertyDelegate);
     }
 
     public static void tick(World world, BlockPos pos, BlockState state, SimpleAlloySmelterBlockEntity entity) {
@@ -60,10 +62,15 @@ public class SimpleAlloySmelterBlockEntity extends MachineBlockEntity {
             }
 
             // Remove the inputs
-            RecipeHelper.craftRecipe(recipe, craftingInventory);
+            RecipeHelper.craftRecipeFromInventory(recipe, craftingInventory);
             entity.setStack(Input0Slot, craftingInventory.getStack(0));
             entity.setStack(Input1Slot, craftingInventory.getStack(1));
             entity.setStack(Input2Slot, craftingInventory.getStack(2));
         }
+    }
+
+    @Override
+    public Text getDisplayName() {
+        return new TranslatableText("block.enderio-reforged.simple_alloy_smelter");
     }
 }
