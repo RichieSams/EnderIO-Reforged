@@ -9,7 +9,7 @@ import net.minecraft.world.World;
 import richiesams.enderio.reforged.util.EnderIOInventory;
 
 public abstract class AbstractMachineBlockEntity extends AbstractSimpleMachineBlockEntity {
-    public final EnderIOInventory capacitorInventory;
+    protected final EnderIOInventory capacitorInventory;
 
 
     public AbstractMachineBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, int inputsSize, int outputsSize) {

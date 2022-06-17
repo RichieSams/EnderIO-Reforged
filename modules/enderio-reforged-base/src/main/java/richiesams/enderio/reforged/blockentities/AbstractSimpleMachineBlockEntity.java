@@ -20,7 +20,7 @@ public abstract class AbstractSimpleMachineBlockEntity extends BlockEntity imple
     protected int progress = 0;
     protected int progressTotal = 0;
 
-    public final EnderIOInventory inputsInventory;
+    protected final EnderIOInventory inputsInventory;
     protected final EnderIOInventory outputsInventory;
 
     public AbstractSimpleMachineBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, int inputsSize, int outputsSize) {
