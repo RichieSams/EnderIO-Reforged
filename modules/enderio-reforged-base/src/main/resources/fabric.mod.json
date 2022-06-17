@@ -1,4 +1,3 @@
-
 {
   "schemaVersion": 1,
   "id": "enderio-reforged-base",
@@ -26,6 +25,7 @@
       "richiesams.enderio.reforged.EnderIOReforgedBaseClientMod"
     ]
   },
+  "accessWidener": "enderio-reforged.accesswidener",
 
   "depends": {
     "fabricloader": ">=0.14.6",

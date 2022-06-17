@@ -1,2 +1,6 @@
 archivesBaseName = "enderio-reforged-base"
 version = getSubprojectVersion(project)
+
+loom {
+    accessWidenerPath = file("src/main/resources/enderio-reforged.accesswidener")
+}

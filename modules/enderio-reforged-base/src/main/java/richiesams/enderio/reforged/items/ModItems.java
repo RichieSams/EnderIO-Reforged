@@ -8,34 +8,44 @@ import richiesams.enderio.reforged.EnderIOReforgedBaseMod;
 
 
 public class ModItems {
-    public static Item YETA_WRENCH = registerItem("yeta_wrench",
-            new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
-    public static Item COAL_POWDER = registerItem("coal_powder",
-            new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
-    public static Item DARK_STEEL_INGOT = registerItem("dark_steel_ingot",
-            new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
-    public static Item DARK_STEEL_NUGGET = registerItem("dark_steel_nugget",
-            new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
-    public static Item WOOD_GEAR = registerItem("wood_gear",
-            new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
-    public static Item STONE_GEAR = registerItem("stone_gear",
-            new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
-    public static Item IRON_GEAR = registerItem("iron_gear",
-            new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
-    public static Item DARK_STEEL_GEAR = registerItem("dark_steel_gear",
-            new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
-    public static Item INFINITY_POWDER = registerItem("infinity_powder",
-            new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
-    public static Item SIMPLE_MACHINE_CHASSIS = registerItem("simple_machine_chassis",
-            new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
-    public static Item INDUSTRIAL_MACHINE_CHASSIS = registerItem("industrial_machine_chassis",
-            new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
+    public static Item YETA_WRENCH;
+    public static Item COAL_POWDER;
+    public static Item DARK_STEEL_INGOT;
+    public static Item DARK_STEEL_NUGGET;
+    public static Item WOOD_GEAR;
+    public static Item STONE_GEAR;
+    public static Item IRON_GEAR;
+    public static Item DARK_STEEL_GEAR;
+    public static Item INFINITY_POWDER;
+    public static Item SIMPLE_MACHINE_CHASSIS;
+    public static Item INDUSTRIAL_MACHINE_CHASSIS;
 
     private static Item registerItem(String name, Item item) {
         return Registry.register(Registry.ITEM, new Identifier(EnderIOReforgedBaseMod.MOD_ID, name), item);
     }
 
-    public static void registerModItems() {
-        EnderIOReforgedBaseMod.LOGGER.info("Registering Mod Items for " + EnderIOReforgedBaseMod.MOD_ID + "-base");
+    public static void registerItems() {
+        YETA_WRENCH = registerItem("yeta_wrench",
+                new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
+        COAL_POWDER = registerItem("coal_powder",
+                new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
+        DARK_STEEL_INGOT = registerItem("dark_steel_ingot",
+                new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
+        DARK_STEEL_NUGGET = registerItem("dark_steel_nugget",
+                new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
+        WOOD_GEAR = registerItem("wood_gear",
+                new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
+        STONE_GEAR = registerItem("stone_gear",
+                new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
+        IRON_GEAR = registerItem("iron_gear",
+                new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
+        DARK_STEEL_GEAR = registerItem("dark_steel_gear",
+                new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
+        INFINITY_POWDER = registerItem("infinity_powder",
+                new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
+        SIMPLE_MACHINE_CHASSIS = registerItem("simple_machine_chassis",
+                new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
+        INDUSTRIAL_MACHINE_CHASSIS = registerItem("industrial_machine_chassis",
+                new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
     }
 }

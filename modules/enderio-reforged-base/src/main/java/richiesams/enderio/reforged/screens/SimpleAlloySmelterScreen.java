@@ -9,10 +9,10 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import richiesams.enderio.reforged.EnderIOReforgedBaseMod;
 
-public class SimpleAlloySmelterScreen extends HandledScreen<SimpleAlloySmelterScreenHandler> {
+public class SimpleAlloySmelterScreen extends HandledScreen<BuiltScreenHandler> {
     private static final Identifier TEXTURE = new Identifier(EnderIOReforgedBaseMod.MOD_ID, "textures/gui/simple_alloy_smelter.png");
 
-    public SimpleAlloySmelterScreen(SimpleAlloySmelterScreenHandler handler, PlayerInventory inventory, Text title) {
+    public SimpleAlloySmelterScreen(BuiltScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
     }
 
@@ -24,10 +24,15 @@ public class SimpleAlloySmelterScreen extends HandledScreen<SimpleAlloySmelterSc
 
     @Override
     protected void drawForeground(MatrixStack matrices, int mouseX, int mouseY) {
-        // For now, suppress drawing the title text and player inventory title text
-        // because they don't fit on the GUI at the moment
-
-        // Do nothing
+        // Draw the crafting progress
+        if (handler.isCrafting()) {
+            float progress = handler.getScaledProgress();
+            int height = (int) (14 * progress);
+            if (height > 0) {
+                drawTexture(matrices, x + 61, y + 37 + (14 - height), 181, 14 - height, 14, height);
+                drawTexture(matrices, x + 109, y + 37 + (14 - height), 181, 14 - height, 14, height);
+            }
+        }
     }
 
     @Override

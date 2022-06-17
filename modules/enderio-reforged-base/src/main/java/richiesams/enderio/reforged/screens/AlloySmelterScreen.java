@@ -9,10 +9,10 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import richiesams.enderio.reforged.EnderIOReforgedBaseMod;
 
-public class AlloySmelterScreen extends HandledScreen<AlloySmelterScreenHandler> {
+public class AlloySmelterScreen extends HandledScreen<BuiltScreenHandler> {
     private static final Identifier TEXTURE = new Identifier(EnderIOReforgedBaseMod.MOD_ID, "textures/gui/alloy_smelter_auto.png");
 
-    public AlloySmelterScreen(AlloySmelterScreenHandler handler, PlayerInventory inventory, Text title) {
+    public AlloySmelterScreen(BuiltScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
     }
 
@@ -24,9 +24,6 @@ public class AlloySmelterScreen extends HandledScreen<AlloySmelterScreenHandler>
 
     @Override
     protected void drawForeground(MatrixStack matrices, int mouseX, int mouseY) {
-        // For now, suppress drawing the title text and player inventory title text
-        // because they don't fit on the GUI at the moment
-
         // Do nothing
     }
 

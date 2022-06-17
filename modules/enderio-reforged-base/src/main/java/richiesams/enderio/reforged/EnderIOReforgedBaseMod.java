@@ -7,6 +7,7 @@ import richiesams.enderio.reforged.blockentities.ModBlockEntities;
 import richiesams.enderio.reforged.blocks.ModBlocks;
 import richiesams.enderio.reforged.items.ModItems;
 import richiesams.enderio.reforged.recipes.ModRecipes;
+import richiesams.enderio.reforged.screens.ModScreenHandlers;
 
 public class EnderIOReforgedBaseMod implements ModInitializer {
     // This logger is used to write text to the console and the log file.
@@ -23,9 +24,10 @@ public class EnderIOReforgedBaseMod implements ModInitializer {
 
         LOGGER.info("Hello world from EnderIO Reforged Base");
 
-        ModItems.registerModItems();
-        ModBlocks.registerModBlocks();
-        ModBlockEntities.registerAllBlockEntities();
+        ModItems.registerItems();
+        ModBlocks.registerBlocks();
+        ModBlockEntities.registerBlockEntities();
+        ModScreenHandlers.registerScreenHandlers();
         ModRecipes.registerRecipes();
     }
 }

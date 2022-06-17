@@ -11,7 +11,7 @@ public class ModBlockEntities {
     public static BlockEntityType<AlloySmelterBlockEntity> ALLOY_SMELTER;
     public static BlockEntityType<SimpleAlloySmelterBlockEntity> SIMPLE_ALLOY_SMELTER;
 
-    public static void registerAllBlockEntities() {
+    public static void registerBlockEntities() {
         ALLOY_SMELTER = Registry.register(Registry.BLOCK_ENTITY_TYPE,
                 new Identifier(EnderIOReforgedBaseMod.MOD_ID, "alloy_smelter"),
                 FabricBlockEntityTypeBuilder.create(AlloySmelterBlockEntity::new, ModBlocks.ALLOY_SMELTER).build(null));

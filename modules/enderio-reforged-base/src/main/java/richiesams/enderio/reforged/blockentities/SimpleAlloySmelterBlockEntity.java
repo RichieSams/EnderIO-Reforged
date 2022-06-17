@@ -1,76 +1,111 @@
 package richiesams.enderio.reforged.blockentities;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.recipe.RecipeManager;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
-import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 import richiesams.enderio.reforged.recipes.AlloyingRecipe;
 import richiesams.enderio.reforged.recipes.RecipeHelper;
-import richiesams.enderio.reforged.screens.SimpleAlloySmelterScreenHandler;
+import richiesams.enderio.reforged.screens.BuiltScreenHandler;
+import richiesams.enderio.reforged.screens.ModScreenHandlers;
+import richiesams.enderio.reforged.screens.ScreenHandlerBuilder;
 
 import java.util.Optional;
 
-public class SimpleAlloySmelterBlockEntity extends MachineBlockEntity {
-    public static final int TotalSlots = 4;
-    public static final int Input0Slot = 0;
-    public static final int Input1Slot = 1;
-    public static final int Input2Slot = 2;
-    public static final int OutputSlot = 3;
+public class SimpleAlloySmelterBlockEntity extends AbstractSimpleMachineBlockEntity {
+    private ItemStack recipeOutput = ItemStack.EMPTY;
+
+    private static final int InputSize = 3;
+    private static final int OutputSize = 1;
 
 
     public SimpleAlloySmelterBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.SIMPLE_ALLOY_SMELTER, pos, state, DefaultedList.ofSize(TotalSlots, ItemStack.EMPTY));
-    }
-
-    @Nullable
-    @Override
-    public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
-        return new SimpleAlloySmelterScreenHandler(syncId, inv, this, this.propertyDelegate);
+        super(ModBlockEntities.SIMPLE_ALLOY_SMELTER, pos, state, InputSize, OutputSize);
     }
 
     public static void tick(World world, BlockPos pos, BlockState state, SimpleAlloySmelterBlockEntity entity) {
-        // Check if there is a valid recipe for us to craft
-        // And if we have space in our output
-        SimpleInventory craftingInventory = new SimpleInventory(3);
-        craftingInventory.setStack(0, entity.getStack(Input0Slot));
-        craftingInventory.setStack(1, entity.getStack(Input1Slot));
-        craftingInventory.setStack(2, entity.getStack(Input2Slot));
+        if (world == null || world.isClient) {
+            return;
+        }
+
+        // TODO: Reduce computations by only checking for new recipes every 20 ticks (1 second)
+        if (entity.progressTotal == 0) {
+            entity.updateRecipe(world);
+        }
+
+        if (entity.progressTotal == 0) {
+            return;
+        }
+
+        if (entity.progress < entity.progressTotal) {
+            ++entity.progress;
+            entity.markDirty();
+            world.updateListeners(pos, state, state, Block.NOTIFY_LISTENERS);
+        } else {
+            if (RecipeHelper.inventoryCanAcceptRecipeOutput(entity.outputsInventory, entity.recipeOutput)) {
+                // Set the output
+                ItemStack currentOutput = entity.outputsInventory.getStack(0);
+                if (currentOutput.isEmpty()) {
+                    entity.outputsInventory.setStack(0, entity.recipeOutput);
+                } else {
+                    currentOutput.increment(entity.recipeOutput.getCount());
+                    entity.outputsInventory.setStack(0, currentOutput);
+                }
+
+                // Reset
+                entity.progress = 0;
+                entity.progressTotal = 0;
+                entity.recipeOutput = null;
+
+                entity.markDirty();
+                world.updateListeners(pos, state, state, Block.NOTIFY_LISTENERS);
+                entity.updateState(false);
+            }
+        }
+    }
+
+    private void updateRecipe(World world) {
+        // Fast out for the "idle" machine case
+        if (inputsInventory.isEmpty()) {
+            return;
+        }
 
         RecipeManager manager = world.getRecipeManager();
-        Optional<AlloyingRecipe> alloyingMatch = manager.getFirstMatch(AlloyingRecipe.Type.INSTANCE, craftingInventory, world);
-        if (alloyingMatch.isPresent() && RecipeHelper.inventoryCanAcceptRecipeOutput(alloyingMatch.get(), entity, OutputSlot)) {
-            // Craft the alloy recipe
-            AlloyingRecipe recipe = alloyingMatch.get();
-
-            // Set the output
-            ItemStack craftingOutput = recipe.craft(craftingInventory);
-            ItemStack currentOutput = entity.getStack(OutputSlot);
-            if (currentOutput.isEmpty()) {
-                entity.setStack(OutputSlot, craftingOutput);
-            } else {
-                currentOutput.increment(craftingOutput.getCount());
-                entity.setStack(OutputSlot, currentOutput);
-            }
+        Optional<AlloyingRecipe> alloyingRecipe = manager.getFirstMatch(AlloyingRecipe.Type.INSTANCE, inputsInventory, world);
+        if (alloyingRecipe.isPresent() && RecipeHelper.inventoryCanAcceptRecipeOutput(outputsInventory, alloyingRecipe.get().craft(inputsInventory))) {
+            AlloyingRecipe recipe = alloyingRecipe.get();
+            progress = 0;
+            progressTotal = recipe.getCookTime();
+            recipeOutput = recipe.craft(inputsInventory);
 
             // Remove the inputs
-            RecipeHelper.craftRecipeFromInventory(recipe, craftingInventory);
-            entity.setStack(Input0Slot, craftingInventory.getStack(0));
-            entity.setStack(Input1Slot, craftingInventory.getStack(1));
-            entity.setStack(Input2Slot, craftingInventory.getStack(2));
+            RecipeHelper.craftRecipeFromInventory(alloyingRecipe.get(), inputsInventory);
+            updateState(true);
         }
     }
 
     @Override
-    public Text getDisplayName() {
-        return new TranslatableText("block.enderio-reforged.simple_alloy_smelter");
+    public void readNbt(NbtCompound nbt) {
+        super.readNbt(nbt);
+        recipeOutput = ItemStack.fromNbt(nbt.getCompound("RecipeOutput"));
+    }
+
+    @Override
+    protected void writeNbt(NbtCompound nbt) {
+        nbt.put("RecipeOutput", recipeOutput.writeNbt(new NbtCompound()));
+        super.writeNbt(nbt);
+    }
+
+    @Override
+    public BuiltScreenHandler createScreenHandler(int syncID, PlayerEntity player) {
+        return new ScreenHandlerBuilder(ModScreenHandlers.SIMPLE_ALLOY_SMELTER_SCREEN_HANDLER)
+                .player(player.getInventory()).addMainInventory(8, 84).addHotbar(8, 142).finish()
+                .blockEntity(inputsInventory).addSlot(0, 54, 17).addSlot(1, 79, 7).addSlot(2, 103, 17).finish()
+                .blockEntity(outputsInventory).addSlot(0, 79, 58).finish()
+                .build(this, syncID);
     }
 }

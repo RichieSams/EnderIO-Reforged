@@ -6,7 +6,6 @@ import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.Recipe;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.registry.Registry;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 
@@ -71,23 +70,20 @@ public class RecipeHelper {
         return true;
     }
 
-    public static <I extends Inventory> boolean inventoryCanAcceptRecipeOutput(@Nullable Recipe<I> recipe, I inventory, int outputSlot) {
-        if (recipe == null) {
-            return false;
+    public static <I extends Inventory> boolean inventoryCanAcceptRecipeOutput(I inventory, ItemStack output) {
+        for (int i = 0; i < inventory.size(); ++i) {
+            ItemStack inventoryStack = inventory.getStack(i);
+            if (inventoryStack.isEmpty()) {
+                return true;
+            }
+            if (inventoryStack.isItemEqualIgnoreDamage(output)) {
+                int newCount = inventoryStack.getCount() + output.getCount();
+                if (newCount <= inventory.getMaxCountPerStack() && newCount <= inventoryStack.getMaxCount()) {
+                    return true;
+                }
+            }
         }
-        ItemStack recipeOutput = recipe.getOutput();
-        if (recipeOutput.isEmpty()) {
-            return false;
-        }
-        ItemStack currentOutput = inventory.getStack(outputSlot);
-        if (currentOutput.isEmpty()) {
-            return true;
-        }
-        if (!currentOutput.isItemEqualIgnoreDamage(recipeOutput)) {
-            return false;
-        }
-        // Check if we have room
-        int newCount = currentOutput.getCount() + recipeOutput.getCount();
-        return newCount <= inventory.getMaxCountPerStack() && newCount <= currentOutput.getMaxCount();
+
+        return false;
     }
 }
