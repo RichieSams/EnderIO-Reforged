@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "enderio-reforged:basic_capacitor",
+    "enderio-reforged:double_layer_capacitor",
+    "enderio-reforged:octadic_capacitor"
+  ]
+}

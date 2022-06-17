@@ -130,9 +130,9 @@ public class AlloySmelterBlockEntity extends AbstractMachineBlockEntity {
     public BuiltScreenHandler createScreenHandler(int syncID, PlayerEntity player) {
         return new ScreenHandlerBuilder(ModScreenHandlers.ALLOY_SMELTER_SCREEN_HANDLER)
                 .player(player.getInventory()).addMainInventory(8, 84).addHotbar(8, 142).finish()
+                .blockEntity(capacitorInventory).addCapacitorSlot(0, 12, 60).finish()
                 .blockEntity(inputsInventory).addSlot(0, 54, 17).addSlot(1, 79, 7).addSlot(2, 103, 17).finish()
                 .blockEntity(outputsInventory).addOutputSlot(0, 79, 58).finish()
-                .blockEntity(capacitorInventory).addCapacitorSlot(0, 12, 60).finish()
                 .build(this, syncID);
     }
 }

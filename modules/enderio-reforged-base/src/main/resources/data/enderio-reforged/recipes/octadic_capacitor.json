@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " V ",
+    "DGD",
+    " V "
+  ],
+  "key": {
+    "V": { "item": "enderio-reforged:vibrant_alloy_ingot" },
+    "D": { "item": "enderio-reforged:double_layer_capacitor" },
+    "G": { "item": "minecraft:glowstone" }
+  },
+  "result": {
+    "item": "enderio-reforged:octadic_capacitor"
+  }
+}

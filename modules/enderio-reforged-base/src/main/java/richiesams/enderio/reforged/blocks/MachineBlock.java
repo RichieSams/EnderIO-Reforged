@@ -40,10 +40,12 @@ public abstract class MachineBlock extends BlockWithEntity implements BlockEntit
         setDefaultState(defaultState);
     }
 
+    @SuppressWarnings("deprecation")
     public BlockState rotate(BlockState state, BlockRotation rotation) {
         return state.with(FACING, rotation.rotate(state.get(FACING)));
     }
 
+    @SuppressWarnings("deprecation")
     public BlockState mirror(BlockState state, BlockMirror mirror) {
         return state.rotate(mirror.getRotation(state.get(FACING)));
     }

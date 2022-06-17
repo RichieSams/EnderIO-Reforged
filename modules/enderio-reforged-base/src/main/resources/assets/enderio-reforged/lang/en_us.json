@@ -1,18 +1,30 @@
 {
+  "itemGroup.enderio-reforged.item_group": "EnderIO Reforged",
+
   "item.enderio-reforged.yeta_wrench": "Yeta Wrench",
+
   "item.enderio-reforged.coal_powder": "Coal Powder",
+  "item.enderio-reforged.infinity_powder": "Grains of Infinity",
+
   "item.enderio-reforged.dark_steel_ingot": "Dark Steel Ingot",
+  "item.enderio-reforged.energetic_alloy_ingot": "Energetic Alloy Ingot",
+  "item.enderio-reforged.vibrant_alloy_ingot": "Vibrant Alloy Ingot",
+
   "item.enderio-reforged.dark_steel_nugget": "Dark Steel Nugget",
+
+  "item.enderio-reforged.basic_capacitor": "Basic Capacitor",
+  "item.enderio-reforged.double_layer_capacitor": "Basic Capacitor",
+  "item.enderio-reforged.octadic_capacitor": "Octadic Capacitor",
+
   "item.enderio-reforged.wood_gear": "Wood Gear",
   "item.enderio-reforged.stone_gear": "Stone Gear",
   "item.enderio-reforged.iron_gear": "Iron Gear",
   "item.enderio-reforged.dark_steel_gear": "Dark Steel Gear",
-  "item.enderio-reforged.infinity_powder": "Grains of Infinity",
+
   "item.enderio-reforged.simple_machine_chassis": "Simple Machine Chassis",
   "item.enderio-reforged.industrial_machine_chassis": "Industrial Machine Chassis",
 
   "block.enderio-reforged.simple_alloy_smelter": "Simple Alloy Smelter",
-  "block.enderio-reforged.alloy_smelter": "Alloy Smelter",
+  "block.enderio-reforged.alloy_smelter": "Alloy Smelter"
 
-  "itemGroup.enderio-reforged.item_group": "EnderIO Reforged"
 }

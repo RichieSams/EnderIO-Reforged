@@ -6,6 +6,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import richiesams.enderio.reforged.util.EnderIOInventory;
 
 public abstract class AbstractMachineBlockEntity extends AbstractSimpleMachineBlockEntity {
     public final EnderIOInventory capacitorInventory;
@@ -14,7 +15,7 @@ public abstract class AbstractMachineBlockEntity extends AbstractSimpleMachineBl
     public AbstractMachineBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, int inputsSize, int outputsSize) {
         super(type, pos, state, inputsSize, outputsSize);
 
-        capacitorInventory = createInventory(this, 1);
+        capacitorInventory = createInventory(this, 1, 1);
     }
 
     @Override

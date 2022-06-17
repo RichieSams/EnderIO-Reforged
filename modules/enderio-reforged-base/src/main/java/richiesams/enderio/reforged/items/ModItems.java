@@ -11,7 +11,12 @@ public class ModItems {
     public static Item YETA_WRENCH;
     public static Item COAL_POWDER;
     public static Item DARK_STEEL_INGOT;
+    public static Item ENERGETIC_ALLOY_INGOT;
+    public static Item VIBRANT_ALLOY_INGOT;
     public static Item DARK_STEEL_NUGGET;
+    public static Item BASIC_CAPACITOR;
+    public static Item DOUBLE_LAYER_CAPACITOR;
+    public static Item OCTADIC_CAPACITOR;
     public static Item WOOD_GEAR;
     public static Item STONE_GEAR;
     public static Item IRON_GEAR;
@@ -31,7 +36,17 @@ public class ModItems {
                 new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
         DARK_STEEL_INGOT = registerItem("dark_steel_ingot",
                 new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
+        ENERGETIC_ALLOY_INGOT = registerItem("energetic_alloy_ingot",
+                new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
+        VIBRANT_ALLOY_INGOT = registerItem("vibrant_alloy_ingot",
+                new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
         DARK_STEEL_NUGGET = registerItem("dark_steel_nugget",
+                new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
+        BASIC_CAPACITOR = registerItem("basic_capacitor",
+                new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
+        DOUBLE_LAYER_CAPACITOR = registerItem("double_layer_capacitor",
+                new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
+        OCTADIC_CAPACITOR = registerItem("octadic_capacitor",
                 new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
         WOOD_GEAR = registerItem("wood_gear",
                 new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));

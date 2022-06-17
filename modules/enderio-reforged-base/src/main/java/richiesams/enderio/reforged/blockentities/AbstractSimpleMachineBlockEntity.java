@@ -14,6 +14,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import richiesams.enderio.reforged.blocks.MachineBlock;
 import richiesams.enderio.reforged.screens.BuiltScreenHandlerProvider;
+import richiesams.enderio.reforged.util.EnderIOInventory;
 
 public abstract class AbstractSimpleMachineBlockEntity extends BlockEntity implements BuiltScreenHandlerProvider {
     protected int progress = 0;
@@ -31,6 +32,15 @@ public abstract class AbstractSimpleMachineBlockEntity extends BlockEntity imple
 
     protected static EnderIOInventory createInventory(AbstractSimpleMachineBlockEntity entity, int size) {
         return new EnderIOInventory(size) {
+            @Override
+            public void markDirty() {
+                entity.markDirty();
+            }
+        };
+    }
+
+    protected static EnderIOInventory createInventory(AbstractSimpleMachineBlockEntity entity, int size, int maxCountPerStack) {
+        return new EnderIOInventory(size, maxCountPerStack) {
             @Override
             public void markDirty() {
                 entity.markDirty();

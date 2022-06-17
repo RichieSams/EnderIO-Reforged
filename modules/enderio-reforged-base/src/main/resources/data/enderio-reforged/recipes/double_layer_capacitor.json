@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " E ",
+    "BCB",
+    " E "
+  ],
+  "key": {
+    "E": { "item": "enderio-reforged:energetic_alloy_ingot" },
+    "B": { "item": "enderio-reforged:basic_capacitor" },
+    "C": { "item": "enderio-reforged:coal_powder" }
+  },
+  "result": {
+    "item": "enderio-reforged:double_layer_capacitor"
+  }
+}

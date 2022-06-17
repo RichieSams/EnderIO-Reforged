@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " NP",
+    "NCN",
+    "PN "
+  ],
+  "key": {
+    "N": { "item": "minecraft:gold_nugget" },
+    "P": { "item": "enderio-reforged:infinity_powder" },
+    "C": { "item": "minecraft:copper_ingot" }
+  },
+  "result": {
+    "item": "enderio-reforged:basic_capacitor"
+  }
+}

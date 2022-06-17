@@ -30,6 +30,7 @@ package richiesams.enderio.reforged.screens;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.screen.slot.Slot;
 import org.apache.commons.lang3.Range;
+import richiesams.enderio.reforged.screens.slots.CapacitorSlot;
 import richiesams.enderio.reforged.screens.slots.OutputSlot;
 
 public class BlockEntityScreenHandlerBuilder {
@@ -54,7 +55,7 @@ public class BlockEntityScreenHandlerBuilder {
     }
 
     public BlockEntityScreenHandlerBuilder addCapacitorSlot(final int index, final int xOffset, final int yOffset) {
-        parent.slots.add(new Slot(this.inventory, index, xOffset, yOffset));
+        parent.slots.add(new CapacitorSlot(this.inventory, index, xOffset, yOffset));
         return this;
     }
 
