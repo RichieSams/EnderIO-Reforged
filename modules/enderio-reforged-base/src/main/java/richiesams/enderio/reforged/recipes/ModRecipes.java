@@ -14,5 +14,9 @@ public class ModRecipes {
                 VanillaSmeltingRecipe.Serializer.INSTANCE);
         Registry.register(Registry.RECIPE_TYPE, new Identifier(EnderIOReforgedBaseMod.MOD_ID, VanillaSmeltingRecipe.Type.ID),
                 VanillaSmeltingRecipe.Type.INSTANCE);
+        Registry.register(Registry.RECIPE_SERIALIZER, new Identifier(EnderIOReforgedBaseMod.MOD_ID, WorldInteractionRecipe.Serializer.ID),
+                WorldInteractionRecipe.Serializer.INSTANCE);
+        Registry.register(Registry.RECIPE_TYPE, new Identifier(EnderIOReforgedBaseMod.MOD_ID, WorldInteractionRecipe.Type.ID),
+                WorldInteractionRecipe.Type.INSTANCE);
     }
 }

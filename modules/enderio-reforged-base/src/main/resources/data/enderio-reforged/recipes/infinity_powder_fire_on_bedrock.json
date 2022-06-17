@@ -1,0 +1,14 @@
+{
+  "type": "enderio-reforged:world_interaction",
+  "top": {
+    "item": "enderio-reforged:fire"
+  },
+  "bottom": {
+    "item": "minecraft:bedrock"
+  },
+  "event": "enderio-reforged:fire_died_event",
+  "result": {
+    "item": "enderio-reforged:infinity_powder",
+    "count": 1
+  }
+}

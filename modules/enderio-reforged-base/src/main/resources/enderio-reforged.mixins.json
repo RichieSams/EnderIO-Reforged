@@ -1,0 +1,9 @@
+{
+  "required": true,
+  "package": "richiesams.enderio.reforged.mixins",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [ "MixinAbstractFireBlock", "MixinFireBlock", "MixinFireBlockInvoker" ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
