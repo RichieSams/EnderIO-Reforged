@@ -11,8 +11,6 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
@@ -29,9 +27,6 @@ import richiesams.enderio.reforged.blockentities.AbstractSimpleMachineBlockEntit
 import richiesams.enderio.reforged.screens.BuiltScreenHandlerProvider;
 
 public abstract class MachineBlock extends BlockWithEntity implements BlockEntityProvider {
-    public static final DirectionProperty FACING;
-    public static final BooleanProperty LIT;
-
     public MachineBlock(Settings settings) {
         super(settings);
         BlockState defaultState = this.getStateManager().getDefaultState()
@@ -42,17 +37,12 @@ public abstract class MachineBlock extends BlockWithEntity implements BlockEntit
 
     @SuppressWarnings("deprecation")
     public BlockState rotate(BlockState state, BlockRotation rotation) {
-        return state.with(FACING, rotation.rotate(state.get(FACING)));
+        return state.with(Properties.HORIZONTAL_FACING, rotation.rotate(state.get(Properties.HORIZONTAL_FACING)));
     }
 
     @SuppressWarnings("deprecation")
     public BlockState mirror(BlockState state, BlockMirror mirror) {
-        return state.rotate(mirror.getRotation(state.get(FACING)));
-    }
-
-    static {
-        FACING = Properties.HORIZONTAL_FACING;
-        LIT = Properties.LIT;
+        return state.rotate(mirror.getRotation(state.get(Properties.HORIZONTAL_FACING)));
     }
 
     @Override
@@ -68,12 +58,12 @@ public abstract class MachineBlock extends BlockWithEntity implements BlockEntit
     }
 
     public void setFacing(Direction facing, World world, BlockPos pos) {
-        world.setBlockState(pos, world.getBlockState(pos).with(FACING, facing));
+        world.setBlockState(pos, world.getBlockState(pos).with(Properties.HORIZONTAL_FACING, facing));
     }
 
-    public void setLit(Boolean active, World world, BlockPos pos) {
-        Direction facing = world.getBlockState(pos).get(FACING);
-        BlockState state = world.getBlockState(pos).with(LIT, active).with(FACING, facing);
+    public void setLit(Boolean lit, World world, BlockPos pos) {
+        Direction facing = world.getBlockState(pos).get(Properties.HORIZONTAL_FACING);
+        BlockState state = world.getBlockState(pos).with(Properties.LIT, lit).with(Properties.HORIZONTAL_FACING, facing);
         world.setBlockState(pos, state, Block.NOTIFY_ALL);
     }
 

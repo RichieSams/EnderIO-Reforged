@@ -1,0 +1,14 @@
+{
+  "xOffset": "south",
+  "yOffset": "east",
+  "zOffset": "east",
+
+  "core": {
+    "texture": "enderio-reforged:conduit/item_conduit_core",
+    "uv": [ 4, 4, 28, 28 ]
+  },
+  "connector": {
+    "texture": "enderio-reforged:conduit/conduit_connector_0",
+    "uv": [ 0, 0, 52, 16 ]
+  }
+}

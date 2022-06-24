@@ -4,3 +4,9 @@ version = getSubprojectVersion(project)
 loom {
     accessWidenerPath = file("src/main/resources/enderio-reforged.accesswidener")
 }
+
+dependencies {
+    include modApi('teamreborn:energy:2.2.0') {
+        exclude(group: "net.fabricmc.fabric-api")
+    }
+}

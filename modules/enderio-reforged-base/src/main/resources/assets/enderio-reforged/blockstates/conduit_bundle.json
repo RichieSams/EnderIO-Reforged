@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "enderio-reforged:block/conduit_bundle" }
+  }
+}

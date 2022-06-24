@@ -12,8 +12,10 @@ public abstract class AbstractMachineBlockEntity extends AbstractSimpleMachineBl
     protected final EnderIOInventory capacitorInventory;
 
 
-    public AbstractMachineBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, int inputsSize, int outputsSize) {
-        super(type, pos, state, inputsSize, outputsSize);
+    public AbstractMachineBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state,
+                                      int inputsSize, int outputsSize,
+                                      int energyCapacity, int maxEnergyInsertion, int maxEnergyExtraction) {
+        super(type, pos, state, inputsSize, outputsSize, energyCapacity, maxEnergyInsertion, maxEnergyExtraction);
 
         capacitorInventory = createInventory(this, 1, 1);
     }

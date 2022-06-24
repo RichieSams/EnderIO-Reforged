@@ -1,5 +1,6 @@
 package richiesams.enderio.reforged.blockentities;
 
+import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -15,7 +16,9 @@ import org.jetbrains.annotations.Nullable;
 import richiesams.enderio.reforged.blocks.MachineBlock;
 import richiesams.enderio.reforged.screens.BuiltScreenHandlerProvider;
 import richiesams.enderio.reforged.util.EnderIOInventory;
+import team.reborn.energy.api.base.SimpleEnergyStorage;
 
+@SuppressWarnings("UnstableApiUsage")
 public abstract class AbstractSimpleMachineBlockEntity extends BlockEntity implements BuiltScreenHandlerProvider {
     protected int progress = 0;
     protected int progressTotal = 0;
@@ -23,11 +26,31 @@ public abstract class AbstractSimpleMachineBlockEntity extends BlockEntity imple
     protected final EnderIOInventory inputsInventory;
     protected final EnderIOInventory outputsInventory;
 
-    public AbstractSimpleMachineBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, int inputsSize, int outputsSize) {
+    public final InventoryStorage InputStorage;
+    public final InventoryStorage OutputStorage;
+    public SimpleEnergyStorage EnergyStorage;
+
+    public AbstractSimpleMachineBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state,
+                                            int inputsSize, int outputsSize,
+                                            int energyCapacity, int maxEnergyInsertion, int maxEnergyExtraction) {
         super(type, pos, state);
 
         inputsInventory = createInventory(this, inputsSize);
         outputsInventory = createInventory(this, outputsSize);
+        InputStorage = InventoryStorage.of(inputsInventory, null);
+        OutputStorage = InventoryStorage.of(outputsInventory, null);
+
+        EnergyStorage = new SimpleEnergyStorage(energyCapacity, maxEnergyInsertion, maxEnergyExtraction) {
+            @Override
+            protected void onFinalCommit() {
+                AbstractSimpleMachineBlockEntity.this.markDirty();
+                AbstractSimpleMachineBlockEntity.this.world.updateListeners(
+                        AbstractSimpleMachineBlockEntity.this.pos,
+                        AbstractSimpleMachineBlockEntity.this.getCachedState(),
+                        AbstractSimpleMachineBlockEntity.this.getCachedState(),
+                        Block.NOTIFY_LISTENERS);
+            }
+        };
     }
 
     protected static EnderIOInventory createInventory(AbstractSimpleMachineBlockEntity entity, int size) {
@@ -35,6 +58,7 @@ public abstract class AbstractSimpleMachineBlockEntity extends BlockEntity imple
             @Override
             public void markDirty() {
                 entity.markDirty();
+                entity.world.updateListeners(entity.pos, entity.getCachedState(), entity.getCachedState(), Block.NOTIFY_LISTENERS);
             }
         };
     }
@@ -44,6 +68,7 @@ public abstract class AbstractSimpleMachineBlockEntity extends BlockEntity imple
             @Override
             public void markDirty() {
                 entity.markDirty();
+                entity.world.updateListeners(entity.pos, entity.getCachedState(), entity.getCachedState(), Block.NOTIFY_LISTENERS);
             }
         };
     }
@@ -55,6 +80,7 @@ public abstract class AbstractSimpleMachineBlockEntity extends BlockEntity imple
         progressTotal = nbt.getInt("ProgressTotal");
         inputsInventory.readNbtList(nbt.getList("Inputs", 10));
         outputsInventory.readNbtList(nbt.getList("Outputs", 10));
+        EnergyStorage.amount = nbt.getLong("Energy");
     }
 
     @Override
@@ -63,6 +89,7 @@ public abstract class AbstractSimpleMachineBlockEntity extends BlockEntity imple
         nbt.putInt("ProgressTotal", progressTotal);
         nbt.put("Inputs", inputsInventory.toNbtList());
         nbt.put("Outputs", outputsInventory.toNbtList());
+        nbt.putLong("Energy", EnergyStorage.amount);
         super.writeNbt(nbt);
     }
 
@@ -83,7 +110,6 @@ public abstract class AbstractSimpleMachineBlockEntity extends BlockEntity imple
         if (block instanceof MachineBlock base) {
             base.setLit(lit, world, pos);
         }
-        world.updateListeners(pos, world.getBlockState(pos), world.getBlockState(pos), Block.NOTIFY_ALL);
     }
 
     public int getProgress() {

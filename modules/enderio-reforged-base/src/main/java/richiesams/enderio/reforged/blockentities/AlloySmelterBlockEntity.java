@@ -22,10 +22,14 @@ public class AlloySmelterBlockEntity extends AbstractMachineBlockEntity {
 
     private static final int InputSize = 3;
     private static final int OutputSize = 1;
-
+    private static final int BaseEnergyStorageSize = 100000;
+    private static final int BaseMaxEnergyInsertion = 120;
+    private static final int MaxEnergyExtraction = 0;
 
     public AlloySmelterBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.ALLOY_SMELTER, pos, state, InputSize, OutputSize);
+        super(ModBlockEntities.ALLOY_SMELTER, pos, state,
+                InputSize, OutputSize,
+                BaseEnergyStorageSize, BaseMaxEnergyInsertion, MaxEnergyExtraction);
     }
 
     public static void tick(World world, BlockPos pos, BlockState state, AlloySmelterBlockEntity entity) {

@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import richiesams.enderio.reforged.blockentities.ModBlockEntities;
 import richiesams.enderio.reforged.blocks.ModBlocks;
+import richiesams.enderio.reforged.conduits.ModConduits;
 import richiesams.enderio.reforged.events.ModEventHandlers;
 import richiesams.enderio.reforged.items.ModItems;
 import richiesams.enderio.reforged.recipes.ModRecipes;
@@ -29,13 +30,14 @@ public class EnderIOReforgedBaseMod implements ModInitializer {
 
         ExtendedVanilla.onInitialize();
 
-        ModItems.registerItems();
         ModBlocks.registerBlocks();
         ModBlockEntities.registerBlockEntities();
+        ModItems.registerItems();
         ModScreenHandlers.registerScreenHandlers();
         ModTags.Items.registerItemTags();
         ModTags.Blocks.registerBlockTags();
         ModRecipes.registerRecipes();
         ModEventHandlers.registerEventHandlers();
+        ModConduits.registerConduits();
     }
 }
