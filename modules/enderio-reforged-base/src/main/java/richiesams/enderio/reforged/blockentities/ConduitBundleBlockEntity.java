@@ -12,15 +12,18 @@ import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.util.function.BooleanBiFunction;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import richiesams.enderio.reforged.api.conduits.Conduit;
 import richiesams.enderio.reforged.api.conduits.ConduitEntity;
+import richiesams.enderio.reforged.api.conduits.ConduitOffset;
 import richiesams.enderio.reforged.blocks.ConduitBundleBlock;
 import richiesams.enderio.reforged.conduits.ModConduits;
 import richiesams.enderio.reforged.rendering.ConduitBundleRenderState;
+import richiesams.enderio.reforged.rendering.ConduitMeshHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -96,11 +99,14 @@ public class ConduitBundleBlockEntity extends BlockEntity implements RenderAttac
         // TODO: We should probably cache this and only update when the state changes
         ArrayList<VoxelShape> shapes = new ArrayList<>();
         if (conduits.size() == 1) {
-            shapes.add(VoxelShapes.cuboid(
-                    6.5f / 16.0f, 6.5f / 16.0f, 6.5f / 16.0f,
-                    9.5f / 16.0f, 9.5f / 16.0f, 9.5f / 16.0f));
+            Box cube = ConduitMeshHelper.CoreFromOffset(ConduitOffset.NONE);
+            shapes.add(VoxelShapes.cuboid(cube));
         } else {
+            for (ConduitEntity conduit : conduits) {
+                Box cube = ConduitMeshHelper.CoreFromOffset(conduit.getBackingConduit().XOffset);
 
+                shapes.add(VoxelShapes.cuboid(cube));
+            }
         }
 
         // TODO: Connections

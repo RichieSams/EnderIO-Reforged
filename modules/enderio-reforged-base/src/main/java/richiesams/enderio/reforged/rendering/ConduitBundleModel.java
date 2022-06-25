@@ -20,13 +20,13 @@ import net.minecraft.client.util.SpriteIdentifier;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.*;
 import net.minecraft.world.BlockRenderView;
 import org.jetbrains.annotations.Nullable;
 import richiesams.enderio.reforged.EnderIOReforgedBaseMod;
 import richiesams.enderio.reforged.api.EnderIOReforgedRegistries;
 import richiesams.enderio.reforged.api.conduits.Conduit;
+import richiesams.enderio.reforged.api.conduits.ConduitOffset;
 import richiesams.enderio.reforged.api.conduits.SpriteReference;
 
 import java.util.*;
@@ -138,30 +138,17 @@ public class ConduitBundleModel implements UnbakedModel, BakedModel, FabricBaked
                 MeshBuilder builder = renderer.meshBuilder();
                 QuadEmitter emitter = builder.getEmitter();
 
-                float left = 6.5f / 16.0f;
-                float right = 9.5f / 16.0f;
+                if (renderState.conduits().size() == 1) {
+                    SpriteReference coreSpriteRef = renderState.conduits().get(0).CoreSprite;
+                    Box cube = ConduitMeshHelper.CoreFromOffset(ConduitOffset.NONE);
 
-                for (Conduit conduit : renderState.conduits()) {
-                    SpriteReference coreSpriteRef = conduit.CoreSprite;
-                    Sprite coreSprite = sprites.get(coreSpriteRef.identifier());
-                    float coreSpriteWidth = coreSprite.getWidth();
-                    float coreSpriteHeight = coreSprite.getHeight();
+                    renderCuboid(emitter, cube, coreSpriteRef);
+                } else {
+                    for (Conduit conduit : renderState.conduits()) {
+                        SpriteReference coreSpriteRef = conduit.CoreSprite;
+                        Box cube = ConduitMeshHelper.CoreFromOffset(conduit.XOffset);
 
-                    for (Direction direction : Direction.values()) {
-                        emitter.square(direction, 6.5f / 16.0f, 6.5f / 16.0f, 9.5f / 16.0f, 9.5f / 16.0f, 6.5f / 16.0f);
-
-                        // Add the texture
-                        emitter.sprite(0, 0, coreSpriteRef.uvFrom().x / coreSpriteWidth, coreSpriteRef.uvFrom().y / coreSpriteHeight);
-                        emitter.sprite(1, 0, coreSpriteRef.uvFrom().x / coreSpriteWidth, coreSpriteRef.uvTo().y / coreSpriteHeight);
-                        emitter.sprite(2, 0, coreSpriteRef.uvTo().x / coreSpriteWidth, coreSpriteRef.uvTo().y / coreSpriteHeight);
-                        emitter.sprite(3, 0, coreSpriteRef.uvTo().x / coreSpriteWidth, coreSpriteRef.uvFrom().y / coreSpriteHeight);
-
-                        // Shift the UV range to fit within the range of the sprite within the atlas
-                        interpolate(emitter, 0, coreSprite);
-
-                        // Enable texture usage
-                        emitter.spriteColor(0, -1, -1, -1, -1);
-                        emitter.emit();
+                        renderCuboid(emitter, cube, coreSpriteRef);
                     }
                 }
 
@@ -170,14 +157,123 @@ public class ConduitBundleModel implements UnbakedModel, BakedModel, FabricBaked
         }
     }
 
-    private static void interpolate(MutableQuadView q, int spriteIndex, Sprite sprite) {
+    private void renderCuboid(QuadEmitter emitter, Box cube, SpriteReference spriteReference) {
+        Sprite sprite = sprites.get(spriteReference.identifier());
+
+        float spriteWidth = sprite.getWidth();
+        float spriteHeight = sprite.getHeight();
+
+        Vec2f normalizedSpriteUVFrom = new Vec2f(spriteReference.uvFrom().x / spriteWidth, spriteReference.uvFrom().y / spriteHeight);
+        Vec2f normalizedSpriteUVTo = new Vec2f(spriteReference.uvTo().x / spriteWidth, spriteReference.uvTo().y / spriteHeight);
+
+        // Render all the faces
+        for (Direction direction : Direction.values()) {
+            renderCuboidFace(emitter, direction, cube, sprite, normalizedSpriteUVFrom, normalizedSpriteUVTo);
+        }
+    }
+
+    private void renderCuboidFace(QuadEmitter emitter, Direction direction, Box cube, Sprite sprite, Vec2f normalizedSpriteUVFrom, Vec2f normalizedSpriteUVTo) {
+        switch (direction) {
+            case DOWN -> {
+                renderQuad(emitter, Direction.DOWN,
+                        new Vec3f((float) cube.maxX, (float) cube.minY, (float) cube.minZ),
+                        new Vec3f((float) cube.maxX, (float) cube.minY, (float) cube.maxZ),
+                        new Vec3f((float) cube.minX, (float) cube.minY, (float) cube.maxZ),
+                        new Vec3f((float) cube.minX, (float) cube.minY, (float) cube.minZ),
+                        sprite,
+                        normalizedSpriteUVFrom,
+                        normalizedSpriteUVTo
+                );
+            }
+            case UP -> {
+                renderQuad(emitter, Direction.UP,
+                        new Vec3f((float) cube.maxX, (float) cube.maxY, (float) cube.maxZ),
+                        new Vec3f((float) cube.maxX, (float) cube.maxY, (float) cube.minZ),
+                        new Vec3f((float) cube.minX, (float) cube.maxY, (float) cube.minZ),
+                        new Vec3f((float) cube.minX, (float) cube.maxY, (float) cube.maxZ),
+                        sprite,
+                        normalizedSpriteUVFrom,
+                        normalizedSpriteUVTo
+                );
+            }
+            case NORTH -> {
+                renderQuad(emitter, Direction.NORTH,
+                        new Vec3f((float) cube.maxX, (float) cube.maxY, (float) cube.minZ),
+                        new Vec3f((float) cube.maxX, (float) cube.minY, (float) cube.minZ),
+                        new Vec3f((float) cube.minX, (float) cube.minY, (float) cube.minZ),
+                        new Vec3f((float) cube.minX, (float) cube.maxY, (float) cube.minZ),
+                        sprite,
+                        normalizedSpriteUVFrom,
+                        normalizedSpriteUVTo
+                );
+            }
+            case SOUTH -> {
+                renderQuad(emitter, Direction.SOUTH,
+                        new Vec3f((float) cube.minX, (float) cube.maxY, (float) cube.maxZ),
+                        new Vec3f((float) cube.minX, (float) cube.minY, (float) cube.maxZ),
+                        new Vec3f((float) cube.maxX, (float) cube.minY, (float) cube.maxZ),
+                        new Vec3f((float) cube.maxX, (float) cube.maxY, (float) cube.maxZ),
+                        sprite,
+                        normalizedSpriteUVFrom,
+                        normalizedSpriteUVTo
+                );
+            }
+            case WEST -> {
+                renderQuad(emitter, Direction.WEST,
+                        new Vec3f((float) cube.minX, (float) cube.maxY, (float) cube.minZ),
+                        new Vec3f((float) cube.minX, (float) cube.minY, (float) cube.minZ),
+                        new Vec3f((float) cube.minX, (float) cube.minY, (float) cube.maxZ),
+                        new Vec3f((float) cube.minX, (float) cube.maxY, (float) cube.maxZ),
+                        sprite,
+                        normalizedSpriteUVFrom,
+                        normalizedSpriteUVTo
+                );
+            }
+            case EAST -> {
+                renderQuad(emitter, Direction.EAST,
+                        new Vec3f((float) cube.maxX, (float) cube.maxY, (float) cube.maxZ),
+                        new Vec3f((float) cube.maxX, (float) cube.minY, (float) cube.maxZ),
+                        new Vec3f((float) cube.maxX, (float) cube.minY, (float) cube.minZ),
+                        new Vec3f((float) cube.maxX, (float) cube.maxY, (float) cube.minZ),
+                        sprite,
+                        normalizedSpriteUVFrom,
+                        normalizedSpriteUVTo
+                );
+            }
+        }
+    }
+
+    private void renderQuad(QuadEmitter emitter, Direction nominalDirection, Vec3f vertex0, Vec3f vertex1, Vec3f vertex2, Vec3f vertex3, Sprite sprite, Vec2f normalizedSpriteUVFrom, Vec2f normalizedSpriteUVTo) {
+        emitter.cullFace(nominalDirection);
+        emitter.nominalFace(nominalDirection);
+
+        emitter.pos(0, vertex0);
+        emitter.pos(1, vertex1);
+        emitter.pos(2, vertex2);
+        emitter.pos(3, vertex3);
+
+        // Add the texture
+        emitter.sprite(0, 0, normalizedSpriteUVFrom.x, normalizedSpriteUVFrom.y);
+        emitter.sprite(1, 0, normalizedSpriteUVFrom.x, normalizedSpriteUVTo.y);
+        emitter.sprite(2, 0, normalizedSpriteUVTo.x, normalizedSpriteUVTo.y);
+        emitter.sprite(3, 0, normalizedSpriteUVTo.x, normalizedSpriteUVFrom.y);
+
+        // Shift the UV range to fit within the range of the sprite within the atlas
+        interpolate(emitter, sprite);
+
+        // Enable texture usage
+        emitter.spriteColor(0, -1, -1, -1, -1);
+        emitter.emit();
+    }
+
+    private void interpolate(MutableQuadView q, Sprite sprite) {
         final float uMin = sprite.getMinU();
         final float uSpan = sprite.getMaxU() - uMin;
         final float vMin = sprite.getMinV();
         final float vSpan = sprite.getMaxV() - vMin;
 
         for (int i = 0; i < 4; i++) {
-            q.sprite(i, spriteIndex, uMin + q.spriteU(i, spriteIndex) * uSpan, vMin + q.spriteV(i, spriteIndex) * vSpan);
+            q.sprite(i, 0, uMin + q.spriteU(i, 0) * uSpan, vMin + q.spriteV(i, 0) * vSpan);
         }
     }
 
