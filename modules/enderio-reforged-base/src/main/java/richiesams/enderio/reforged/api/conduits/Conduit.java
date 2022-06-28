@@ -3,6 +3,13 @@ package richiesams.enderio.reforged.api.conduits;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
+import richiesams.enderio.reforged.EnderIOReforgedBaseMod;
+import richiesams.enderio.reforged.api.EnderIOReforgedRegistries;
 import richiesams.enderio.reforged.api.util.SerializationUtil;
 
 public class Conduit {
@@ -49,6 +56,16 @@ public class Conduit {
         this.ConnectorSprite = SpriteReference.fromJSON(connector);
 
         this.factory = factory;
+    }
+
+    public ItemStack toItemStack() {
+        Identifier identifier = EnderIOReforgedRegistries.CONDUIT.getId(this);
+        Item item = Registry.ITEM.get(identifier);
+        if (item == Items.AIR) {
+            EnderIOReforgedBaseMod.LOGGER.warn("Failed to get Conduit item for %s".formatted(identifier));
+        }
+
+        return item.getDefaultStack();
     }
 
     public ConduitEntity createConduitEntity() {

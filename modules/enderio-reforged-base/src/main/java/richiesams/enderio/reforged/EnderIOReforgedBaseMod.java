@@ -30,6 +30,7 @@ public class EnderIOReforgedBaseMod implements ModInitializer {
 
         ExtendedVanilla.onInitialize();
 
+        ModConduits.registerConduits();
         ModBlocks.registerBlocks();
         ModBlockEntities.registerBlockEntities();
         ModItems.registerItems();
@@ -37,7 +38,7 @@ public class EnderIOReforgedBaseMod implements ModInitializer {
         ModTags.Items.registerItemTags();
         ModTags.Blocks.registerBlockTags();
         ModRecipes.registerRecipes();
+
         ModEventHandlers.registerEventHandlers();
-        ModConduits.registerConduits();
     }
 }

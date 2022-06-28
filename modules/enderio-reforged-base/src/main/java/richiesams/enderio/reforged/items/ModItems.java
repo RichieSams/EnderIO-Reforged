@@ -7,7 +7,7 @@ import net.minecraft.item.Item;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import richiesams.enderio.reforged.EnderIOReforgedBaseMod;
-import richiesams.enderio.reforged.blocks.ModBlocks;
+import richiesams.enderio.reforged.conduits.ModConduits;
 
 
 public class ModItems {
@@ -67,8 +67,9 @@ public class ModItems {
                 new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
         INDUSTRIAL_MACHINE_CHASSIS = registerItem("industrial_machine_chassis",
                 new Item(new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
+
         ITEM_CONDUIT = registerItem("item_conduit",
-                new BlockItem(ModBlocks.CONDUIT_BUNDLE, new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
+                new ConduitItem(ModConduits.ITEM_CONDUIT, new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
 
         VANILLA_FIRE = Registry.register(Registry.ITEM, new Identifier(EnderIOReforgedBaseMod.MOD_ID, "fire"),
                 new BlockItem(Blocks.FIRE, new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));

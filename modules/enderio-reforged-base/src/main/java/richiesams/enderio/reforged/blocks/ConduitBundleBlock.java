@@ -4,11 +4,7 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.state.StateManager;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
@@ -41,18 +37,6 @@ public class ConduitBundleBlock extends BlockWithEntity implements BlockEntityPr
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
         return checkType(type, ModBlockEntities.CONDUIT_BUNDLE, ConduitBundleBlockEntity::tick);
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        if (!world.isClient) {
-            if (world.getBlockEntity(pos) instanceof ConduitBundleBlockEntity blockEntity) {
-                blockEntity.onUse(state, world, this);
-            }
-        }
-
-        return ActionResult.SUCCESS;
     }
 
     @SuppressWarnings("deprecation")
