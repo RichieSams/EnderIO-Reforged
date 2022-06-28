@@ -24,6 +24,9 @@
   "item.enderio-reforged.simple_machine_chassis": "Simple Machine Chassis",
   "item.enderio-reforged.industrial_machine_chassis": "Industrial Machine Chassis",
 
+  "item.enderio-reforged.item_conduit": "Item Conduit",
+  "item.enderio-reforged.basic_fluid_conduit": "Basic Fluid Conduit",
+
   "block.enderio-reforged.simple_alloy_smelter": "Simple Alloy Smelter",
   "block.enderio-reforged.alloy_smelter": "Alloy Smelter"
 
