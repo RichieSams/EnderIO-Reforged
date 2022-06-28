@@ -1,4 +1,7 @@
 {
+  "group": "item",
+  "tier": 0,
+
   "xOffset": "south",
   "yOffset": "east",
   "zOffset": "east",

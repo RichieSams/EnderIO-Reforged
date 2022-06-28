@@ -1,5 +1,6 @@
 package richiesams.enderio.reforged.api.conduits;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import richiesams.enderio.reforged.api.util.SerializationUtil;
@@ -12,9 +13,25 @@ public class Conduit {
     public final SpriteReference CoreSprite;
     public final SpriteReference ConnectorSprite;
 
+    public final String Group;
+    public final int Tier;
+
     private final Conduit.Factory<? extends ConduitEntity> factory;
 
     public Conduit(JsonObject jsonObject, Conduit.Factory<? extends ConduitEntity> factory) {
+        JsonElement group = jsonObject.get("group");
+        if (group == null) {
+            throw new JsonSyntaxException("Missing \"group\" value in conduit definition");
+        }
+        this.Group = group.getAsString();
+
+        JsonElement tier = jsonObject.get("tier");
+        if (tier == null) {
+            this.Tier = 0;
+        } else {
+            this.Tier = tier.getAsInt();
+        }
+
         this.XOffset = SerializationUtil.GSON.fromJson(jsonObject.get("xOffset"), ConduitOffset.class);
         this.YOffset = SerializationUtil.GSON.fromJson(jsonObject.get("yOffset"), ConduitOffset.class);
         this.ZOffset = SerializationUtil.GSON.fromJson(jsonObject.get("zOffset"), ConduitOffset.class);
