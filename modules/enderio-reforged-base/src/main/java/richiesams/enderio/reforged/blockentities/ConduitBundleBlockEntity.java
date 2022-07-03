@@ -18,10 +18,12 @@ import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.Pair;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.function.BooleanBiFunction;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.World;
@@ -235,16 +237,72 @@ public class ConduitBundleBlockEntity extends BlockEntity implements RenderAttac
     }
 
     public VoxelShape getOutlineShape() {
-        // TODO: We should probably cache this and only update when the state changes
-        MinecraftClient client = MinecraftClient.getInstance();
-        HitResult hit = client.crosshairTarget;
-
-        ArrayList<VoxelShape> shapes = new ArrayList<>();
+        // Fail-safe
         if (conduitEntities.size() == 0) {
-            // Fail-safe
             return VoxelShapes.fullCube();
         }
 
+        MinecraftClient client = MinecraftClient.getInstance();
+        HitResult hit = client.crosshairTarget;
+
+        if (hit == null) {
+            return getCollisionShape();
+        }
+        if (hit.getType() != HitResult.Type.BLOCK) {
+            return getCollisionShape();
+        }
+        BlockHitResult blockHit = (BlockHitResult) hit;
+        if (!(world.getBlockEntity(blockHit.getBlockPos()) instanceof ConduitBundleBlockEntity)) {
+            return getCollisionShape();
+        }
+
+        Vec3d hitPos = blockHit.getPos();
+        hitPos = hitPos.subtract(Vec3d.of(blockHit.getBlockPos()));
+
+        switch (blockHit.getSide()) {
+            case DOWN -> {
+                hitPos = hitPos.add(0.0, 0.01, 0.0);
+            }
+            case UP -> {
+                hitPos = hitPos.add(0.0, -0.01, 0.0);
+            }
+            case NORTH -> {
+                hitPos = hitPos.add(0.0, 0.0, 0.01);
+            }
+            case SOUTH -> {
+                hitPos = hitPos.add(0.0, 0.0, -0.01);
+            }
+            case WEST -> {
+                hitPos = hitPos.add(0.01, 0.0, 0.0);
+            }
+            case EAST -> {
+                hitPos = hitPos.add(-0.01, 0.0, 0.0);
+            }
+        }
+
+        for (ConduitShape conduitShape : conduitShapes.values()) {
+            for (Box box : conduitShape.cores()) {
+                if (box.contains(hitPos)) {
+                    return VoxelShapes.cuboid(box);
+                }
+            }
+            for (Pair<Direction, Box> pair : conduitShape.connections()) {
+                if (pair.getRight().contains(hitPos)) {
+                    return VoxelShapes.cuboid(pair.getRight());
+                }
+            }
+        }
+
+        return getCollisionShape();
+    }
+
+    public VoxelShape getCollisionShape() {
+        // Fail-safe
+        if (conduitEntities.size() == 0) {
+            return VoxelShapes.fullCube();
+        }
+
+        ArrayList<VoxelShape> shapes = new ArrayList<>();
         for (ConduitShape conduitShape : conduitShapes.values()) {
             for (Box box : conduitShape.cores()) {
                 shapes.add(VoxelShapes.cuboid(box));

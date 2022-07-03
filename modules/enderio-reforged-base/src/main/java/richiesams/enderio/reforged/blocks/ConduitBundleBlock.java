@@ -53,13 +53,12 @@ public class ConduitBundleBlock extends BlockWithEntity implements BlockEntityPr
     @SuppressWarnings("deprecation")
     @Override
     public VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return super.getCollisionShape(state, world, pos, context);
-    }
+        BlockEntity blockEntity = world.getBlockEntity(pos);
+        if (blockEntity instanceof ConduitBundleBlockEntity conduitBundleBlockEntity) {
+            return conduitBundleBlockEntity.getCollisionShape();
+        }
 
-    @SuppressWarnings("deprecation")
-    @Override
-    public VoxelShape getRaycastShape(BlockState state, BlockView world, BlockPos pos) {
-        return super.getRaycastShape(state, world, pos);
+        return super.getCollisionShape(state, world, pos, context);
     }
 
     @SuppressWarnings("deprecation")

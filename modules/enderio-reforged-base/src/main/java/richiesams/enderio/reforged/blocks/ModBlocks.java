@@ -35,6 +35,6 @@ public class ModBlocks {
 
         CONDUIT_BUNDLE = Registry.register(Registry.BLOCK,
                 new Identifier(EnderIOReforgedBaseMod.MOD_ID, "conduit_bundle"),
-                new ConduitBundleBlock(FabricBlockSettings.of(Material.METAL).nonOpaque()));
+                new ConduitBundleBlock(FabricBlockSettings.of(Material.METAL).nonOpaque().dynamicBounds()));
     }
 }
