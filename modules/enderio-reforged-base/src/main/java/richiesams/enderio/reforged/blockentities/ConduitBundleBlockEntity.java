@@ -40,6 +40,9 @@ import richiesams.enderio.reforged.rendering.ConduitShape;
 import java.util.*;
 
 public class ConduitBundleBlockEntity extends BlockEntity implements RenderAttachmentBlockEntity {
+    private static final double coreCollisionExpansion = 0.25 / 16.0;
+    private static final double connectionCollisionExpansion = 0.75 / 16.0;
+
     protected HashMap<UUID, ConduitEntity> conduitEntities;
     protected HashMap<UUID, ConduitShape> conduitShapes;
 
@@ -282,13 +285,31 @@ public class ConduitBundleBlockEntity extends BlockEntity implements RenderAttac
 
         for (ConduitShape conduitShape : conduitShapes.values()) {
             for (Box box : conduitShape.cores()) {
-                if (box.contains(hitPos)) {
-                    return VoxelShapes.cuboid(box);
+                Box expandedBox = box.expand(coreCollisionExpansion);
+
+                if (expandedBox.contains(hitPos)) {
+                    return VoxelShapes.cuboid(expandedBox);
                 }
             }
             for (Pair<Direction, Box> pair : conduitShape.connections()) {
-                if (pair.getRight().contains(hitPos)) {
-                    return VoxelShapes.cuboid(pair.getRight());
+                Box box;
+                switch (pair.getLeft()) {
+                    case UP, DOWN -> {
+                        box = pair.getRight().expand(connectionCollisionExpansion, 0.0, connectionCollisionExpansion);
+                    }
+                    case NORTH, SOUTH -> {
+                        box = pair.getRight().expand(connectionCollisionExpansion, connectionCollisionExpansion, 0.0);
+                    }
+                    case EAST, WEST -> {
+                        box = pair.getRight().expand(0.0, connectionCollisionExpansion, connectionCollisionExpansion);
+                    }
+                    default -> {
+                        throw new RuntimeException("Unknown direction %s".formatted(pair.getLeft()));
+                    }
+                }
+
+                if (box.contains(hitPos)) {
+                    return VoxelShapes.cuboid(box);
                 }
             }
         }
@@ -305,10 +326,20 @@ public class ConduitBundleBlockEntity extends BlockEntity implements RenderAttac
         ArrayList<VoxelShape> shapes = new ArrayList<>();
         for (ConduitShape conduitShape : conduitShapes.values()) {
             for (Box box : conduitShape.cores()) {
-                shapes.add(VoxelShapes.cuboid(box));
+                shapes.add(VoxelShapes.cuboid(box.expand(coreCollisionExpansion)));
             }
             for (Pair<Direction, Box> pair : conduitShape.connections()) {
-                shapes.add(VoxelShapes.cuboid(pair.getRight()));
+                switch (pair.getLeft()) {
+                    case UP, DOWN -> {
+                        shapes.add(VoxelShapes.cuboid(pair.getRight().expand(connectionCollisionExpansion, 0.0, connectionCollisionExpansion)));
+                    }
+                    case NORTH, SOUTH -> {
+                        shapes.add(VoxelShapes.cuboid(pair.getRight().expand(connectionCollisionExpansion, connectionCollisionExpansion, 0.0)));
+                    }
+                    case EAST, WEST -> {
+                        shapes.add(VoxelShapes.cuboid(pair.getRight().expand(0.0, connectionCollisionExpansion, connectionCollisionExpansion)));
+                    }
+                }
             }
         }
 
