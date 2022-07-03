@@ -52,8 +52,14 @@ public class ConduitBundleBlockEntity extends BlockEntity implements RenderAttac
             return;
         }
 
+        boolean markDirty = false;
         for (ConduitEntity conduit : entity.conduitEntities.values()) {
-            conduit.tick(world, pos, state);
+            markDirty |= conduit.tick(world, pos, state);
+        }
+
+        if (markDirty) {
+            entity.markDirty();
+            world.updateListeners(pos, state, state, Block.NOTIFY_LISTENERS);
         }
     }
 
@@ -93,6 +99,7 @@ public class ConduitBundleBlockEntity extends BlockEntity implements RenderAttac
                         conduitEntities.put(uuid, newConduitEntity);
                         markDirty();
                         world.updateListeners(pos, world.getBlockState(pos), world.getBlockState(pos), Block.NOTIFY_LISTENERS);
+                        conduitEntity.markConnectionsDirty();
 
                         return true;
                     }
@@ -126,9 +133,12 @@ public class ConduitBundleBlockEntity extends BlockEntity implements RenderAttac
 
             HashSet<ConduitOffset> coreOffsets = new HashSet<>();
             List<Pair<Direction, Box>> connectionShapes = new ArrayList<>();
-            for (ConduitConnection connection : conduitEntity.getConnections()) {
+            for (var connectionEntry : conduitEntity.getConnections().entrySet()) {
+                Direction direction = connectionEntry.getKey();
+                ConduitConnection connection = connectionEntry.getValue();
+
                 ConduitOffset offset;
-                switch (connection.direction()) {
+                switch (direction) {
                     case NORTH, SOUTH -> {
                         offset = overrideOffset != null ? overrideOffset : backingConduit.ZOffset;
                     }
@@ -139,15 +149,18 @@ public class ConduitBundleBlockEntity extends BlockEntity implements RenderAttac
                         offset = overrideOffset != null ? overrideOffset : backingConduit.YOffset;
                     }
                     default -> {
-                        throw new RuntimeException("Invalid Direction %s".formatted(connection.direction()));
+                        throw new RuntimeException("Invalid Direction %s".formatted(direction));
                     }
                 }
 
                 coreOffsets.add(offset);
                 connectionShapes.add(new Pair<>(
-                        connection.direction(),
-                        ConduitMeshHelper.ConnectorFromOffset(offset, connection.direction())
+                        direction,
+                        ConduitMeshHelper.ConnectorFromOffset(offset, direction)
                 ));
+            }
+            if (coreOffsets.size() == 0) {
+                coreOffsets.add(overrideOffset != null ? overrideOffset : backingConduit.ZOffset);
             }
 
             List<Box> coreShapes = coreOffsets.stream().map((ConduitMeshHelper::CoreFromOffset)).toList();
@@ -213,6 +226,12 @@ public class ConduitBundleBlockEntity extends BlockEntity implements RenderAttac
                 ).toList();
 
         return new ConduitBundleRenderState(renderStates);
+    }
+
+    public void neighborUpdate() {
+        for (ConduitEntity conduitEntity : conduitEntities.values()) {
+            conduitEntity.markConnectionsDirty();
+        }
     }
 
     public VoxelShape getOutlineShape() {

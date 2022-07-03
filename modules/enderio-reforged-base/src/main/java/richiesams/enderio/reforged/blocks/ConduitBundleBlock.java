@@ -49,4 +49,26 @@ public class ConduitBundleBlock extends BlockWithEntity implements BlockEntityPr
 
         return super.getOutlineShape(state, world, pos, context);
     }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+        return super.getCollisionShape(state, world, pos, context);
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public VoxelShape getRaycastShape(BlockState state, BlockView world, BlockPos pos) {
+        return super.getRaycastShape(state, world, pos);
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public void neighborUpdate(BlockState state, World world, BlockPos pos, Block block, BlockPos fromPos, boolean notify) {
+        if (world.getBlockEntity(pos) instanceof ConduitBundleBlockEntity blockEntity) {
+            blockEntity.neighborUpdate();
+        }
+
+        super.neighborUpdate(state, world, pos, block, fromPos, notify);
+    }
 }
