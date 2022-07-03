@@ -43,7 +43,8 @@ public record SpriteReference(
 
         return new SpriteReference(
                 textureIdentifier,
-                new Vec2f(UVs.get(0), UVs.get(1)), new Vec2f(UVs.get(2), UVs.get(3))
+                // Normalize the coordinates
+                new Vec2f(UVs.get(0) / 16.0f, UVs.get(1) / 16.0f), new Vec2f(UVs.get(2) / 16.0f, UVs.get(3) / 16.0f)
         );
     }
 }

@@ -18,7 +18,8 @@ public class Conduit {
     public final ConduitOffset ZOffset;
 
     public final SpriteReference CoreSprite;
-    public final SpriteReference ConnectorSprite;
+    public final SpriteReference ConnectorOuterSprite;
+    public final SpriteReference ConnectorInnerSprite;
 
     public final String Group;
     public final int Tier;
@@ -53,7 +54,19 @@ public class Conduit {
         if (connector == null) {
             throw new JsonSyntaxException("Missing \"connector\" section in conduit definition");
         }
-        this.ConnectorSprite = SpriteReference.fromJSON(connector);
+        JsonObject connectorOuter = connector.getAsJsonObject("outer");
+        if (connectorOuter == null) {
+            throw new JsonSyntaxException("Missing \"connector::outer\" section in conduit definition");
+        }
+        this.ConnectorOuterSprite = SpriteReference.fromJSON(connectorOuter);
+        JsonObject connectorInner = connector.getAsJsonObject("inner");
+        if (connectorInner == null) {
+            // The inner sprite is optional
+            this.ConnectorInnerSprite = null;
+        } else {
+            this.ConnectorInnerSprite = SpriteReference.fromJSON(connectorInner);
+        }
+
 
         this.factory = factory;
     }

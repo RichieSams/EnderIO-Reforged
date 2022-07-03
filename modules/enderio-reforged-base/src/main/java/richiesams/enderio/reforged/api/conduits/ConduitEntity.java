@@ -4,16 +4,22 @@ import net.minecraft.block.BlockState;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import richiesams.enderio.reforged.EnderIOReforgedBaseMod;
 import richiesams.enderio.reforged.api.EnderIOReforgedRegistries;
 
+import java.util.Arrays;
+import java.util.List;
+
 public abstract class ConduitEntity {
     protected final Conduit conduit;
+    protected final List<ConduitConnection> connections;
 
     protected ConduitEntity(Conduit conduit) {
         this.conduit = conduit;
+        this.connections = Arrays.stream(Direction.values()).map((Direction direction) -> new ConduitConnection(direction, false, false, false)).toList();
     }
 
     public abstract void tick(World world, BlockPos pos, BlockState state);
@@ -27,6 +33,10 @@ public abstract class ConduitEntity {
 
     public Conduit getBackingConduit() {
         return conduit;
+    }
+
+    public List<ConduitConnection> getConnections() {
+        return connections;
     }
 
     @Nullable

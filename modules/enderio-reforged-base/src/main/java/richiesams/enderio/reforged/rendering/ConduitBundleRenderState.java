@@ -5,8 +5,12 @@ import richiesams.enderio.reforged.api.conduits.Conduit;
 import java.util.List;
 
 public record ConduitBundleRenderState(
-        List<Conduit> conduits,
-        List<ConduitConnection> connections
+        List<ConduitRenderState> conduitRenderStates
 ) {
+    public record ConduitRenderState(
+            Conduit conduit,
+            ConduitShape shape
+    ) {
+    }
 }
 

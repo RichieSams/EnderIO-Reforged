@@ -8,10 +8,12 @@
 
   "core": {
     "texture": "enderio-reforged:conduit/conduit_core_1",
-    "uv": [ 0, 0, 24, 24 ]
+    "uv": [ 0, 0, 8, 8 ]
   },
   "connector": {
-    "texture": "enderio-reforged:conduit/fluid_conduit",
-    "uv": [ 0, 0, 52, 16 ]
+    "outer": {
+      "texture": "enderio-reforged:conduit/fluid_conduit",
+      "uv": [ 0, 0, 13, 4 ]
+    }
   }
 }

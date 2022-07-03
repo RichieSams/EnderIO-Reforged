@@ -33,7 +33,10 @@ public class EnderIOReforgedBaseClientMod implements ClientModInitializer {
             for (Entry<RegistryKey<Conduit>, Conduit> entry : EnderIOReforgedRegistries.CONDUIT.getEntrySet()) {
                 Conduit conduit = entry.getValue();
                 registry.register(conduit.CoreSprite.identifier());
-                registry.register(conduit.ConnectorSprite.identifier());
+                registry.register(conduit.ConnectorOuterSprite.identifier());
+                if (conduit.ConnectorInnerSprite != null) {
+                    registry.register(conduit.ConnectorInnerSprite.identifier());
+                }
             }
 
             // Additionally load the "crossover" texture

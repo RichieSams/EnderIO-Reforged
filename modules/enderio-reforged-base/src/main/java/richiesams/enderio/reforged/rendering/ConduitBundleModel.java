@@ -26,7 +26,6 @@ import org.jetbrains.annotations.Nullable;
 import richiesams.enderio.reforged.EnderIOReforgedBaseMod;
 import richiesams.enderio.reforged.api.EnderIOReforgedRegistries;
 import richiesams.enderio.reforged.api.conduits.Conduit;
-import richiesams.enderio.reforged.api.conduits.ConduitOffset;
 import richiesams.enderio.reforged.api.conduits.SpriteReference;
 
 import java.util.*;
@@ -50,7 +49,7 @@ public class ConduitBundleModel implements UnbakedModel, BakedModel, FabricBaked
         ArrayList<SpriteIdentifier> dependencies = new ArrayList<>();
         for (var entry : EnderIOReforgedRegistries.CONDUIT.getEntrySet()) {
             dependencies.add(new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, entry.getValue().CoreSprite.identifier()));
-            dependencies.add(new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, entry.getValue().ConnectorSprite.identifier()));
+            dependencies.add(new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, entry.getValue().ConnectorOuterSprite.identifier()));
         }
 
         // Add particle break texture
@@ -66,8 +65,12 @@ public class ConduitBundleModel implements UnbakedModel, BakedModel, FabricBaked
         for (var entry : EnderIOReforgedRegistries.CONDUIT.getEntrySet()) {
             sprites.put(entry.getValue().CoreSprite.identifier(), textureGetter.apply(
                     new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, entry.getValue().CoreSprite.identifier())));
-            sprites.put(entry.getValue().ConnectorSprite.identifier(), textureGetter.apply(
-                    new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, entry.getValue().ConnectorSprite.identifier())));
+            sprites.put(entry.getValue().ConnectorOuterSprite.identifier(), textureGetter.apply(
+                    new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, entry.getValue().ConnectorOuterSprite.identifier())));
+            if (entry.getValue().ConnectorInnerSprite != null) {
+                sprites.put(entry.getValue().ConnectorInnerSprite.identifier(), textureGetter.apply(
+                        new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, entry.getValue().ConnectorInnerSprite.identifier())));
+            }
         }
 
         // Particle break texture
@@ -138,17 +141,69 @@ public class ConduitBundleModel implements UnbakedModel, BakedModel, FabricBaked
                 MeshBuilder builder = renderer.meshBuilder();
                 QuadEmitter emitter = builder.getEmitter();
 
-                if (renderState.conduits().size() == 1) {
-                    SpriteReference coreSpriteRef = renderState.conduits().get(0).CoreSprite;
-                    Box cube = ConduitMeshHelper.CoreFromOffset(ConduitOffset.NONE);
+                for (ConduitBundleRenderState.ConduitRenderState conduitRenderState : renderState.conduitRenderStates()) {
+                    Conduit conduit = conduitRenderState.conduit();
+                    ConduitShape shape = conduitRenderState.shape();
 
-                    renderCuboid(emitter, cube, coreSpriteRef);
-                } else {
-                    for (Conduit conduit : renderState.conduits()) {
-                        SpriteReference coreSpriteRef = conduit.CoreSprite;
-                        Box cube = ConduitMeshHelper.CoreFromOffset(conduit.XOffset);
+                    // Render the cores
+                    SpriteReference coreSpriteRef = conduit.CoreSprite;
+                    for (Box box : shape.cores()) {
+                        renderCuboid(emitter, box, coreSpriteRef);
+                    }
 
-                        renderCuboid(emitter, cube, coreSpriteRef);
+                    // Now render the connectors
+                    // Render the inner texture first, if it exists
+                    ArrayList<SpriteReference> connectorSpriteRefs = new ArrayList<>();
+                    if (conduit.ConnectorInnerSprite != null) {
+                        connectorSpriteRefs.add(conduit.ConnectorInnerSprite);
+                    }
+                    connectorSpriteRefs.add(conduit.ConnectorOuterSprite);
+                    for (SpriteReference spriteRef : connectorSpriteRefs) {
+                        Sprite sprite = sprites.get(spriteRef.identifier());
+
+                        for (net.minecraft.util.Pair<Direction, Box> connectionPair : shape.connections()) {
+                            Direction direction = connectionPair.getLeft();
+                            Box box = connectionPair.getRight();
+
+                            switch (direction) {
+                                case UP -> {
+                                    renderCuboidFace(emitter, Direction.NORTH, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_270);
+                                    renderCuboidFace(emitter, Direction.SOUTH, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_270);
+                                    renderCuboidFace(emitter, Direction.EAST, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_270);
+                                    renderCuboidFace(emitter, Direction.WEST, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_270);
+                                }
+                                case DOWN -> {
+                                    renderCuboidFace(emitter, Direction.NORTH, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_90);
+                                    renderCuboidFace(emitter, Direction.SOUTH, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_90);
+                                    renderCuboidFace(emitter, Direction.EAST, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_90);
+                                    renderCuboidFace(emitter, Direction.WEST, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_90);
+                                }
+                                case NORTH -> {
+                                    renderCuboidFace(emitter, Direction.EAST, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_0);
+                                    renderCuboidFace(emitter, Direction.WEST, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_180);
+                                    renderCuboidFace(emitter, Direction.UP, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_90);
+                                    renderCuboidFace(emitter, Direction.DOWN, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_270);
+                                }
+                                case SOUTH -> {
+                                    renderCuboidFace(emitter, Direction.EAST, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_180);
+                                    renderCuboidFace(emitter, Direction.WEST, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_0);
+                                    renderCuboidFace(emitter, Direction.UP, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_270);
+                                    renderCuboidFace(emitter, Direction.DOWN, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_90);
+                                }
+                                case EAST -> {
+                                    renderCuboidFace(emitter, Direction.NORTH, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_180);
+                                    renderCuboidFace(emitter, Direction.SOUTH, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_0);
+                                    renderCuboidFace(emitter, Direction.UP, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_180);
+                                    renderCuboidFace(emitter, Direction.DOWN, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_0);
+                                }
+                                case WEST -> {
+                                    renderCuboidFace(emitter, Direction.NORTH, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_0);
+                                    renderCuboidFace(emitter, Direction.SOUTH, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_180);
+                                    renderCuboidFace(emitter, Direction.UP, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_0);
+                                    renderCuboidFace(emitter, Direction.DOWN, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_180);
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -157,22 +212,16 @@ public class ConduitBundleModel implements UnbakedModel, BakedModel, FabricBaked
         }
     }
 
-    private void renderCuboid(QuadEmitter emitter, Box cube, SpriteReference spriteReference) {
-        Sprite sprite = sprites.get(spriteReference.identifier());
-
-        float spriteWidth = sprite.getWidth();
-        float spriteHeight = sprite.getHeight();
-
-        Vec2f normalizedSpriteUVFrom = new Vec2f(spriteReference.uvFrom().x / spriteWidth, spriteReference.uvFrom().y / spriteHeight);
-        Vec2f normalizedSpriteUVTo = new Vec2f(spriteReference.uvTo().x / spriteWidth, spriteReference.uvTo().y / spriteHeight);
+    private void renderCuboid(QuadEmitter emitter, Box cube, SpriteReference spriteRef) {
+        Sprite sprite = sprites.get(spriteRef.identifier());
 
         // Render all the faces
         for (Direction direction : Direction.values()) {
-            renderCuboidFace(emitter, direction, cube, sprite, normalizedSpriteUVFrom, normalizedSpriteUVTo);
+            renderCuboidFace(emitter, direction, cube, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_0);
         }
     }
 
-    private void renderCuboidFace(QuadEmitter emitter, Direction direction, Box cube, Sprite sprite, Vec2f normalizedSpriteUVFrom, Vec2f normalizedSpriteUVTo) {
+    private void renderCuboidFace(QuadEmitter emitter, Direction direction, Box cube, Sprite sprite, Vec2f uvFrom, Vec2f uvTo, Rotation uvRotation) {
         switch (direction) {
             case DOWN -> {
                 renderQuad(emitter, Direction.DOWN,
@@ -181,8 +230,9 @@ public class ConduitBundleModel implements UnbakedModel, BakedModel, FabricBaked
                         new Vec3f((float) cube.minX, (float) cube.minY, (float) cube.maxZ),
                         new Vec3f((float) cube.minX, (float) cube.minY, (float) cube.minZ),
                         sprite,
-                        normalizedSpriteUVFrom,
-                        normalizedSpriteUVTo
+                        uvFrom,
+                        uvTo,
+                        uvRotation
                 );
             }
             case UP -> {
@@ -192,8 +242,9 @@ public class ConduitBundleModel implements UnbakedModel, BakedModel, FabricBaked
                         new Vec3f((float) cube.minX, (float) cube.maxY, (float) cube.minZ),
                         new Vec3f((float) cube.minX, (float) cube.maxY, (float) cube.maxZ),
                         sprite,
-                        normalizedSpriteUVFrom,
-                        normalizedSpriteUVTo
+                        uvFrom,
+                        uvTo,
+                        uvRotation
                 );
             }
             case NORTH -> {
@@ -203,8 +254,9 @@ public class ConduitBundleModel implements UnbakedModel, BakedModel, FabricBaked
                         new Vec3f((float) cube.minX, (float) cube.minY, (float) cube.minZ),
                         new Vec3f((float) cube.minX, (float) cube.maxY, (float) cube.minZ),
                         sprite,
-                        normalizedSpriteUVFrom,
-                        normalizedSpriteUVTo
+                        uvFrom,
+                        uvTo,
+                        uvRotation
                 );
             }
             case SOUTH -> {
@@ -214,8 +266,9 @@ public class ConduitBundleModel implements UnbakedModel, BakedModel, FabricBaked
                         new Vec3f((float) cube.maxX, (float) cube.minY, (float) cube.maxZ),
                         new Vec3f((float) cube.maxX, (float) cube.maxY, (float) cube.maxZ),
                         sprite,
-                        normalizedSpriteUVFrom,
-                        normalizedSpriteUVTo
+                        uvFrom,
+                        uvTo,
+                        uvRotation
                 );
             }
             case WEST -> {
@@ -225,8 +278,9 @@ public class ConduitBundleModel implements UnbakedModel, BakedModel, FabricBaked
                         new Vec3f((float) cube.minX, (float) cube.minY, (float) cube.maxZ),
                         new Vec3f((float) cube.minX, (float) cube.maxY, (float) cube.maxZ),
                         sprite,
-                        normalizedSpriteUVFrom,
-                        normalizedSpriteUVTo
+                        uvFrom,
+                        uvTo,
+                        uvRotation
                 );
             }
             case EAST -> {
@@ -236,14 +290,17 @@ public class ConduitBundleModel implements UnbakedModel, BakedModel, FabricBaked
                         new Vec3f((float) cube.maxX, (float) cube.minY, (float) cube.minZ),
                         new Vec3f((float) cube.maxX, (float) cube.maxY, (float) cube.minZ),
                         sprite,
-                        normalizedSpriteUVFrom,
-                        normalizedSpriteUVTo
+                        uvFrom,
+                        uvTo,
+                        uvRotation
                 );
             }
         }
     }
 
-    private void renderQuad(QuadEmitter emitter, Direction nominalDirection, Vec3f vertex0, Vec3f vertex1, Vec3f vertex2, Vec3f vertex3, Sprite sprite, Vec2f normalizedSpriteUVFrom, Vec2f normalizedSpriteUVTo) {
+    private void renderQuad(QuadEmitter emitter, Direction nominalDirection,
+                            Vec3f vertex0, Vec3f vertex1, Vec3f vertex2, Vec3f vertex3,
+                            Sprite sprite, Vec2f uvFrom, Vec2f uvTo, Rotation uvRotation) {
         emitter.cullFace(nominalDirection);
         emitter.nominalFace(nominalDirection);
 
@@ -253,10 +310,13 @@ public class ConduitBundleModel implements UnbakedModel, BakedModel, FabricBaked
         emitter.pos(3, vertex3);
 
         // Add the texture
-        emitter.sprite(0, 0, normalizedSpriteUVFrom.x, normalizedSpriteUVFrom.y);
-        emitter.sprite(1, 0, normalizedSpriteUVFrom.x, normalizedSpriteUVTo.y);
-        emitter.sprite(2, 0, normalizedSpriteUVTo.x, normalizedSpriteUVTo.y);
-        emitter.sprite(3, 0, normalizedSpriteUVTo.x, normalizedSpriteUVFrom.y);
+        emitter.sprite(0, 0, uvFrom.x, uvFrom.y);
+        emitter.sprite(1, 0, uvFrom.x, uvTo.y);
+        emitter.sprite(2, 0, uvTo.x, uvTo.y);
+        emitter.sprite(3, 0, uvTo.x, uvFrom.y);
+
+        // Rotate the texture
+        rotateSprite(emitter, uvRotation);
 
         // Shift the UV range to fit within the range of the sprite within the atlas
         interpolate(emitter, sprite);
@@ -277,8 +337,46 @@ public class ConduitBundleModel implements UnbakedModel, BakedModel, FabricBaked
         }
     }
 
+    private void rotateSprite(MutableQuadView q, Rotation rotation) {
+        Vec2f uv0 = new Vec2f(q.spriteU(0, 0), q.spriteV(0, 0));
+        Vec2f uv1 = new Vec2f(q.spriteU(1, 0), q.spriteV(1, 0));
+        Vec2f uv2 = new Vec2f(q.spriteU(2, 0), q.spriteV(2, 0));
+        Vec2f uv3 = new Vec2f(q.spriteU(3, 0), q.spriteV(3, 0));
+
+        switch (rotation) {
+            case DEGREES_0 -> {
+                // Nothing
+            }
+            case DEGREES_90 -> {
+                q.sprite(0, 0, uv1.x, uv1.y);
+                q.sprite(1, 0, uv2.x, uv2.y);
+                q.sprite(2, 0, uv3.x, uv3.y);
+                q.sprite(3, 0, uv0.x, uv0.y);
+            }
+            case DEGREES_180 -> {
+                q.sprite(0, 0, uv2.x, uv2.y);
+                q.sprite(1, 0, uv3.x, uv3.y);
+                q.sprite(2, 0, uv0.x, uv0.y);
+                q.sprite(3, 0, uv1.x, uv1.y);
+            }
+            case DEGREES_270 -> {
+                q.sprite(0, 0, uv3.x, uv3.y);
+                q.sprite(1, 0, uv0.x, uv0.y);
+                q.sprite(2, 0, uv1.x, uv1.y);
+                q.sprite(3, 0, uv2.x, uv2.y);
+            }
+        }
+    }
+
     @Override
     public void emitItemQuads(ItemStack stack, Supplier<Random> randomSupplier, RenderContext context) {
         throw new RuntimeException("ConduitBundle should not exist as an item");
+    }
+
+    public enum Rotation {
+        DEGREES_0,
+        DEGREES_90,
+        DEGREES_180,
+        DEGREES_270
     }
 }
