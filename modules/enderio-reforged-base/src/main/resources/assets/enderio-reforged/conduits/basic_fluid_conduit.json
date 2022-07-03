@@ -2,9 +2,9 @@
   "group": "fluid",
   "tier": 0,
 
-  "xOffset": "north",
-  "yOffset": "west",
-  "zOffset": "west",
+  "eastWestOffset": "north",
+  "upDownOffset": "west",
+  "northSouthOffset": "west",
 
   "core": {
     "texture": "enderio-reforged:conduit/conduit_core_1",

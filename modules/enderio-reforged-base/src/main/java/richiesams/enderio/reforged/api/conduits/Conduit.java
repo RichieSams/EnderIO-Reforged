@@ -13,9 +13,9 @@ import richiesams.enderio.reforged.api.EnderIOReforgedRegistries;
 import richiesams.enderio.reforged.api.util.SerializationUtil;
 
 public class Conduit {
-    public final ConduitOffset XOffset;
-    public final ConduitOffset YOffset;
-    public final ConduitOffset ZOffset;
+    public final ConduitOffset EastWestOffset;
+    public final ConduitOffset UpDownOffset;
+    public final ConduitOffset NorthSouthOffset;
 
     public final SpriteReference CoreSprite;
     public final SpriteReference ConnectorOuterSprite;
@@ -40,9 +40,9 @@ public class Conduit {
             this.Tier = tier.getAsInt();
         }
 
-        this.XOffset = SerializationUtil.GSON.fromJson(jsonObject.get("xOffset"), ConduitOffset.class);
-        this.YOffset = SerializationUtil.GSON.fromJson(jsonObject.get("yOffset"), ConduitOffset.class);
-        this.ZOffset = SerializationUtil.GSON.fromJson(jsonObject.get("zOffset"), ConduitOffset.class);
+        this.EastWestOffset = SerializationUtil.GSON.fromJson(jsonObject.get("eastWestOffset"), ConduitOffset.class);
+        this.UpDownOffset = SerializationUtil.GSON.fromJson(jsonObject.get("upDownOffset"), ConduitOffset.class);
+        this.NorthSouthOffset = SerializationUtil.GSON.fromJson(jsonObject.get("northSouthOffset"), ConduitOffset.class);
 
         JsonObject core = jsonObject.getAsJsonObject("core");
         if (core == null) {

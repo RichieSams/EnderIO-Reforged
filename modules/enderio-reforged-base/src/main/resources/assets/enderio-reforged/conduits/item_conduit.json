@@ -2,9 +2,9 @@
   "group": "item",
   "tier": 0,
 
-  "xOffset": "south",
-  "yOffset": "east",
-  "zOffset": "east",
+  "eastWestOffset": "south",
+  "upDownOffset": "east",
+  "northSouthOffset": "east",
 
   "core": {
     "texture": "enderio-reforged:conduit/item_conduit_core",

@@ -140,13 +140,13 @@ public class ConduitBundleBlockEntity extends BlockEntity implements RenderAttac
                 ConduitOffset offset;
                 switch (direction) {
                     case NORTH, SOUTH -> {
-                        offset = overrideOffset != null ? overrideOffset : backingConduit.ZOffset;
+                        offset = overrideOffset != null ? overrideOffset : backingConduit.NorthSouthOffset;
                     }
                     case EAST, WEST -> {
-                        offset = overrideOffset != null ? overrideOffset : backingConduit.XOffset;
+                        offset = overrideOffset != null ? overrideOffset : backingConduit.EastWestOffset;
                     }
                     case UP, DOWN -> {
-                        offset = overrideOffset != null ? overrideOffset : backingConduit.YOffset;
+                        offset = overrideOffset != null ? overrideOffset : backingConduit.UpDownOffset;
                     }
                     default -> {
                         throw new RuntimeException("Invalid Direction %s".formatted(direction));
@@ -160,7 +160,7 @@ public class ConduitBundleBlockEntity extends BlockEntity implements RenderAttac
                 ));
             }
             if (coreOffsets.size() == 0) {
-                coreOffsets.add(overrideOffset != null ? overrideOffset : backingConduit.ZOffset);
+                coreOffsets.add(overrideOffset != null ? overrideOffset : backingConduit.NorthSouthOffset);
             }
 
             List<Box> coreShapes = coreOffsets.stream().map((ConduitMeshHelper::CoreFromOffset)).toList();
