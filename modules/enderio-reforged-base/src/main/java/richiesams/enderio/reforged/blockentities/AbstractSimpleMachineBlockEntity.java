@@ -22,6 +22,7 @@ import team.reborn.energy.api.base.SimpleEnergyStorage;
 public abstract class AbstractSimpleMachineBlockEntity extends BlockEntity implements BuiltScreenHandlerProvider {
     protected int progress = 0;
     protected int progressTotal = 0;
+    protected int EUPerTick = 0;
 
     protected final EnderIOInventory inputsInventory;
     protected final EnderIOInventory outputsInventory;
@@ -78,6 +79,7 @@ public abstract class AbstractSimpleMachineBlockEntity extends BlockEntity imple
         super.readNbt(nbt);
         progress = nbt.getInt("Progress");
         progressTotal = nbt.getInt("ProgressTotal");
+        EUPerTick = nbt.getInt("EUPerTick");
         inputsInventory.readNbtList(nbt.getList("Inputs", 10));
         outputsInventory.readNbtList(nbt.getList("Outputs", 10));
         EnergyStorage.amount = nbt.getLong("Energy");
@@ -87,6 +89,7 @@ public abstract class AbstractSimpleMachineBlockEntity extends BlockEntity imple
     protected void writeNbt(NbtCompound nbt) {
         nbt.putInt("Progress", progress);
         nbt.putInt("ProgressTotal", progressTotal);
+        nbt.putInt("EUPerTick", EUPerTick);
         nbt.put("Inputs", inputsInventory.toNbtList());
         nbt.put("Outputs", outputsInventory.toNbtList());
         nbt.putLong("Energy", EnergyStorage.amount);
@@ -118,6 +121,14 @@ public abstract class AbstractSimpleMachineBlockEntity extends BlockEntity imple
 
     public int getProgressTotal() {
         return progressTotal;
+    }
+
+    public long getCurrentEnergy() {
+        return EnergyStorage.amount;
+    }
+
+    public long getEnergyCapacity() {
+        return EnergyStorage.capacity;
     }
 
     public void onBlockDestroyed(World world, BlockPos pos) {

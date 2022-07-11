@@ -27,14 +27,20 @@
 
 package richiesams.enderio.reforged.screens;
 
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import org.apache.commons.lang3.Range;
 import richiesams.enderio.reforged.blockentities.AbstractSimpleMachineBlockEntity;
+import richiesams.enderio.reforged.util.Humanize;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -199,5 +205,31 @@ public class BuiltScreenHandler extends ScreenHandler {
         int progressTotal = blockEntity.getProgressTotal();
 
         return (float) progress / (float) progressTotal;
+    }
+
+    public float getScaledEnergy() {
+        Objects.requireNonNull(blockEntity);
+
+        long current = blockEntity.getCurrentEnergy();
+        long capacity = blockEntity.getEnergyCapacity();
+
+        return (float) ((double) current / (double) capacity);
+    }
+
+    public List<Text> getTooltipLines() {
+        ArrayList<Text> lines = new ArrayList<>();
+        if (!Screen.hasShiftDown()) {
+            lines.add(new LiteralText("%s / %s EU".formatted(Humanize.number(blockEntity.getCurrentEnergy()), Humanize.number(blockEntity.getEnergyCapacity()))));
+            lines.add(new TranslatableText("tooltip.enderio-reforged.more_info"));
+        } else {
+            lines.add(new LiteralText("%d / %d EU".formatted(blockEntity.getCurrentEnergy(), blockEntity.getEnergyCapacity())));
+            lines.add(new TranslatableText("tooltip.enderio-reforged.max_input").append("%d EU/tick".formatted(blockEntity.EnergyStorage.maxInsert)));
+            long maxOutput = blockEntity.EnergyStorage.maxExtract;
+            if (maxOutput > 0) {
+                lines.add(new TranslatableText("tooltip.enderio-reforged.max_output").append("%d EU/tick".formatted(maxOutput)));
+            }
+        }
+
+        return lines;
     }
 }

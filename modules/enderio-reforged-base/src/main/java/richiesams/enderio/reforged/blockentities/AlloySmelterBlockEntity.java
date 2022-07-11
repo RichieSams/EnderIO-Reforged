@@ -32,6 +32,7 @@ public class AlloySmelterBlockEntity extends AbstractMachineBlockEntity {
                 BaseEnergyStorageSize, BaseMaxEnergyInsertion, MaxEnergyExtraction);
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     public static void tick(World world, BlockPos pos, BlockState state, AlloySmelterBlockEntity entity) {
         if (world == null || world.isClient) {
             return;
@@ -46,10 +47,14 @@ public class AlloySmelterBlockEntity extends AbstractMachineBlockEntity {
             return;
         }
 
+
         if (entity.progress < entity.progressTotal) {
-            ++entity.progress;
-            entity.markDirty();
-            world.updateListeners(pos, state, state, Block.NOTIFY_LISTENERS);
+            if (entity.EnergyStorage.amount >= entity.EUPerTick) {
+                entity.EnergyStorage.amount -= entity.EUPerTick;
+                ++entity.progress;
+                entity.markDirty();
+                world.updateListeners(pos, state, state, Block.NOTIFY_LISTENERS);
+            }
         } else {
             if (RecipeHelper.inventoryCanAcceptRecipeOutput(entity.outputsInventory, entity.recipeOutput)) {
                 // Set the output
@@ -64,6 +69,7 @@ public class AlloySmelterBlockEntity extends AbstractMachineBlockEntity {
                 // Reset
                 entity.progress = 0;
                 entity.progressTotal = 0;
+                entity.EUPerTick = 0;
                 entity.recipeOutput = null;
 
                 entity.markDirty();
@@ -79,12 +85,18 @@ public class AlloySmelterBlockEntity extends AbstractMachineBlockEntity {
             return;
         }
 
+        // Fast out for no energy
+        if (EnergyStorage.amount == 0) {
+            return;
+        }
+
         RecipeManager manager = world.getRecipeManager();
         Optional<AlloyingRecipe> alloyingRecipe = manager.getFirstMatch(AlloyingRecipe.Type.INSTANCE, inputsInventory, world);
         if (alloyingRecipe.isPresent() && RecipeHelper.inventoryCanAcceptRecipeOutput(outputsInventory, alloyingRecipe.get().craft(inputsInventory))) {
             AlloyingRecipe recipe = alloyingRecipe.get();
             progress = 0;
             progressTotal = recipe.getCookTime();
+            EUPerTick = recipe.getEUPerTick();
             recipeOutput = recipe.craft(inputsInventory);
 
             // Remove the inputs
@@ -104,6 +116,7 @@ public class AlloySmelterBlockEntity extends AbstractMachineBlockEntity {
             VanillaSmeltingRecipe recipe = smeltingRecipe.get();
             progress = 0;
             progressTotal = recipe.getCookTime();
+            EUPerTick = recipe.getEUPerTick();
             recipeOutput = recipe.craft(inputsInventory);
 
             // Remove the inputs

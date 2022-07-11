@@ -28,6 +28,9 @@
   "item.enderio-reforged.basic_fluid_conduit": "Basic Fluid Conduit",
 
   "block.enderio-reforged.simple_alloy_smelter": "Simple Alloy Smelter",
-  "block.enderio-reforged.alloy_smelter": "Alloy Smelter"
+  "block.enderio-reforged.alloy_smelter": "Alloy Smelter",
 
+  "tooltip.enderio-reforged.more_info": "Hold Shift for more info",
+  "tooltip.enderio-reforged.max_input": "Max input: ",
+  "tooltip.enderio-reforged.max_output": "Max output: "
 }

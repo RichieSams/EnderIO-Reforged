@@ -11,6 +11,7 @@ import richiesams.enderio.reforged.EnderIOReforgedBaseMod;
 
 public class AlloySmelterScreen extends HandledScreen<BuiltScreenHandler> {
     private static final Identifier TEXTURE = new Identifier(EnderIOReforgedBaseMod.MOD_ID, "textures/gui/alloy_smelter_auto.png");
+    private static final Identifier OVERLAY_TEXTURE = new Identifier(EnderIOReforgedBaseMod.MOD_ID, "textures/gui/overlay.png");
 
     public AlloySmelterScreen(BuiltScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
@@ -46,6 +47,14 @@ public class AlloySmelterScreen extends HandledScreen<BuiltScreenHandler> {
                 drawTexture(matrices, x + 104, y + 36 + (14 - height), 176, 14 - height, 14, height);
             }
         }
+
+        // Draw the energy
+        RenderSystem.setShaderTexture(0, OVERLAY_TEXTURE);
+        float energy = handler.getScaledEnergy();
+        int height = (int) (42 * energy);
+        if (height > 0) {
+            drawTexture(matrices, x + 16, y + 14 + (42 - height), 0, 128, 9, height);
+        }
     }
 
     @Override
@@ -53,5 +62,15 @@ public class AlloySmelterScreen extends HandledScreen<BuiltScreenHandler> {
         renderBackground(matrices);
         super.render(matrices, mouseX, mouseY, delta);
         drawMouseoverTooltip(matrices, mouseX, mouseY);
+    }
+
+    @Override
+    protected void drawMouseoverTooltip(MatrixStack matrices, int x, int y) {
+        // Energy mouseover tooltip
+        if (isPointWithinBounds(16, 14, 9, 42, x, y)) {
+            renderTooltip(matrices, handler.getTooltipLines(), x, y);
+        }
+
+        super.drawMouseoverTooltip(matrices, x, y);
     }
 }

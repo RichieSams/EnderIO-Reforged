@@ -150,6 +150,10 @@ public class VanillaSmeltingRecipe implements Recipe<Inventory> {
         return experience;
     }
 
+    public int getEUPerTick() {
+        return 6;
+    }
+
     @Override
     public RecipeSerializer<?> getSerializer() {
         return VanillaSmeltingRecipe.Serializer.INSTANCE;
