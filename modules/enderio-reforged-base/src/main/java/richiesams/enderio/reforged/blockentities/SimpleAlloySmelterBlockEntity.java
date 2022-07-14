@@ -47,9 +47,12 @@ public class SimpleAlloySmelterBlockEntity extends AbstractSimpleMachineBlockEnt
         }
 
         if (entity.progress < entity.progressTotal) {
-            ++entity.progress;
-            entity.markDirty();
-            world.updateListeners(pos, state, state, Block.NOTIFY_LISTENERS);
+            if (entity.energyStorage.amount >= entity.EUPerTick) {
+                entity.energyStorage.amount -= entity.EUPerTick;
+                ++entity.progress;
+                entity.markDirty();
+                world.updateListeners(pos, state, state, Block.NOTIFY_LISTENERS);
+            }
         } else {
             if (RecipeHelper.inventoryCanAcceptRecipeOutput(entity.outputsInventory, entity.recipeOutput)) {
                 // Set the output
@@ -64,6 +67,7 @@ public class SimpleAlloySmelterBlockEntity extends AbstractSimpleMachineBlockEnt
                 // Reset
                 entity.progress = 0;
                 entity.progressTotal = 0;
+                entity.EUPerTick = 0;
                 entity.recipeOutput = null;
 
                 entity.markDirty();
@@ -85,6 +89,7 @@ public class SimpleAlloySmelterBlockEntity extends AbstractSimpleMachineBlockEnt
             AlloyingRecipe recipe = alloyingRecipe.get();
             progress = 0;
             progressTotal = recipe.getCookTime();
+            EUPerTick = recipe.getEUPerTick();
             recipeOutput = recipe.craft(inputsInventory);
 
             // Remove the inputs

@@ -68,7 +68,7 @@ public class AlloySmelterScreen extends HandledScreen<BuiltScreenHandler> {
     protected void drawMouseoverTooltip(MatrixStack matrices, int x, int y) {
         // Energy mouseover tooltip
         if (isPointWithinBounds(16, 14, 9, 42, x, y)) {
-            renderTooltip(matrices, handler.getTooltipLines(), x, y);
+            renderTooltip(matrices, handler.getEnergyTooltipLines(), x, y);
         }
 
         super.drawMouseoverTooltip(matrices, x, y);

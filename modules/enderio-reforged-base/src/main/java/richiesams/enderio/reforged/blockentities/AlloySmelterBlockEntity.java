@@ -17,6 +17,8 @@ import richiesams.enderio.reforged.screens.ScreenHandlerBuilder;
 
 import java.util.Optional;
 
+import static richiesams.enderio.reforged.blockentities.ModBlockEntities.ALLOY_SMELTER;
+
 public class AlloySmelterBlockEntity extends AbstractMachineBlockEntity {
     private ItemStack recipeOutput = ItemStack.EMPTY;
 
@@ -27,7 +29,7 @@ public class AlloySmelterBlockEntity extends AbstractMachineBlockEntity {
     private static final int MaxEnergyExtraction = 0;
 
     public AlloySmelterBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.ALLOY_SMELTER, pos, state,
+        super(ALLOY_SMELTER, pos, state,
                 InputSize, OutputSize,
                 BaseEnergyStorageSize, BaseMaxEnergyInsertion, MaxEnergyExtraction);
     }
@@ -47,10 +49,9 @@ public class AlloySmelterBlockEntity extends AbstractMachineBlockEntity {
             return;
         }
 
-
         if (entity.progress < entity.progressTotal) {
-            if (entity.EnergyStorage.amount >= entity.EUPerTick) {
-                entity.EnergyStorage.amount -= entity.EUPerTick;
+            if (entity.energyStorage.amount >= entity.EUPerTick) {
+                entity.energyStorage.amount -= entity.EUPerTick;
                 ++entity.progress;
                 entity.markDirty();
                 world.updateListeners(pos, state, state, Block.NOTIFY_LISTENERS);
@@ -86,7 +87,7 @@ public class AlloySmelterBlockEntity extends AbstractMachineBlockEntity {
         }
 
         // Fast out for no energy
-        if (EnergyStorage.amount == 0) {
+        if (energyStorage.amount == 0) {
             return;
         }
 

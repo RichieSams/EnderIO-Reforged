@@ -1,14 +1,19 @@
 package richiesams.enderio.reforged.blockentities;
 
 import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.Packet;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -16,7 +21,11 @@ import org.jetbrains.annotations.Nullable;
 import richiesams.enderio.reforged.blocks.MachineBlock;
 import richiesams.enderio.reforged.screens.BuiltScreenHandlerProvider;
 import richiesams.enderio.reforged.util.EnderIOInventory;
+import richiesams.enderio.reforged.util.Humanize;
 import team.reborn.energy.api.base.SimpleEnergyStorage;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @SuppressWarnings("UnstableApiUsage")
 public abstract class AbstractSimpleMachineBlockEntity extends BlockEntity implements BuiltScreenHandlerProvider {
@@ -27,9 +36,9 @@ public abstract class AbstractSimpleMachineBlockEntity extends BlockEntity imple
     protected final EnderIOInventory inputsInventory;
     protected final EnderIOInventory outputsInventory;
 
-    public final InventoryStorage InputStorage;
-    public final InventoryStorage OutputStorage;
-    public SimpleEnergyStorage EnergyStorage;
+    protected final InventoryStorage inputStorage;
+    protected final InventoryStorage outputStorage;
+    protected final SimpleEnergyStorage energyStorage;
 
     public AbstractSimpleMachineBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state,
                                             int inputsSize, int outputsSize,
@@ -38,10 +47,10 @@ public abstract class AbstractSimpleMachineBlockEntity extends BlockEntity imple
 
         inputsInventory = createInventory(this, inputsSize);
         outputsInventory = createInventory(this, outputsSize);
-        InputStorage = InventoryStorage.of(inputsInventory, null);
-        OutputStorage = InventoryStorage.of(outputsInventory, null);
+        inputStorage = InventoryStorage.of(inputsInventory, null);
+        outputStorage = InventoryStorage.of(outputsInventory, null);
 
-        EnergyStorage = new SimpleEnergyStorage(energyCapacity, maxEnergyInsertion, maxEnergyExtraction) {
+        energyStorage = new SimpleEnergyStorage(energyCapacity, maxEnergyInsertion, maxEnergyExtraction) {
             @Override
             protected void onFinalCommit() {
                 AbstractSimpleMachineBlockEntity.this.markDirty();
@@ -82,7 +91,7 @@ public abstract class AbstractSimpleMachineBlockEntity extends BlockEntity imple
         EUPerTick = nbt.getInt("EUPerTick");
         inputsInventory.readNbtList(nbt.getList("Inputs", 10));
         outputsInventory.readNbtList(nbt.getList("Outputs", 10));
-        EnergyStorage.amount = nbt.getLong("Energy");
+        energyStorage.amount = nbt.getLong("Energy");
     }
 
     @Override
@@ -92,7 +101,7 @@ public abstract class AbstractSimpleMachineBlockEntity extends BlockEntity imple
         nbt.putInt("EUPerTick", EUPerTick);
         nbt.put("Inputs", inputsInventory.toNbtList());
         nbt.put("Outputs", outputsInventory.toNbtList());
-        nbt.putLong("Energy", EnergyStorage.amount);
+        nbt.putLong("Energy", energyStorage.amount);
         super.writeNbt(nbt);
     }
 
@@ -124,15 +133,38 @@ public abstract class AbstractSimpleMachineBlockEntity extends BlockEntity imple
     }
 
     public long getCurrentEnergy() {
-        return EnergyStorage.amount;
+        return energyStorage.amount;
     }
 
     public long getEnergyCapacity() {
-        return EnergyStorage.capacity;
+        return energyStorage.capacity;
+    }
+
+    public List<Text> getEnergyTooltipLines() {
+        ArrayList<Text> lines = new ArrayList<>();
+        if (!Screen.hasShiftDown()) {
+            lines.add(new LiteralText("%s / %s EU".formatted(Humanize.number(energyStorage.amount), Humanize.number(energyStorage.capacity))));
+            lines.add(new TranslatableText("tooltip.enderio-reforged.more_info"));
+        } else {
+            lines.add(new LiteralText("%d / %d EU".formatted(energyStorage.amount, energyStorage.capacity)));
+            lines.add(new TranslatableText("tooltip.enderio-reforged.max_input").append("%d EU/tick".formatted(energyStorage.maxInsert)));
+            long maxOutput = energyStorage.maxExtract;
+            if (maxOutput > 0) {
+                lines.add(new TranslatableText("tooltip.enderio-reforged.max_output").append("%d EU/tick".formatted(maxOutput)));
+            }
+        }
+
+        return lines;
     }
 
     public void onBlockDestroyed(World world, BlockPos pos) {
         ItemScatterer.spawn(world, pos, inputsInventory);
         ItemScatterer.spawn(world, pos, outputsInventory);
+    }
+
+    public static <T extends AbstractSimpleMachineBlockEntity> void registerStorage(BlockEntityType<T> blockEntityType) {
+        ItemStorage.SIDED.registerForBlockEntity((blockEntity, direction) -> blockEntity.inputStorage, blockEntityType);
+        ItemStorage.SIDED.registerForBlockEntity((blockEntity, direction) -> blockEntity.outputStorage, blockEntityType);
+        team.reborn.energy.api.EnergyStorage.SIDED.registerForBlockEntity((blockEntity, direction) -> blockEntity.energyStorage, blockEntityType);
     }
 }

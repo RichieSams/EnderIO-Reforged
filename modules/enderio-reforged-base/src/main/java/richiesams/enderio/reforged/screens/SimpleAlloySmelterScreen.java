@@ -11,6 +11,7 @@ import richiesams.enderio.reforged.EnderIOReforgedBaseMod;
 
 public class SimpleAlloySmelterScreen extends HandledScreen<BuiltScreenHandler> {
     private static final Identifier TEXTURE = new Identifier(EnderIOReforgedBaseMod.MOD_ID, "textures/gui/simple_alloy_smelter.png");
+    private static final Identifier OVERLAY_TEXTURE = new Identifier(EnderIOReforgedBaseMod.MOD_ID, "textures/gui/overlay.png");
 
     public SimpleAlloySmelterScreen(BuiltScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
@@ -24,15 +25,7 @@ public class SimpleAlloySmelterScreen extends HandledScreen<BuiltScreenHandler> 
 
     @Override
     protected void drawForeground(MatrixStack matrices, int mouseX, int mouseY) {
-        // Draw the crafting progress
-        if (handler.isCrafting()) {
-            float progress = handler.getScaledProgress();
-            int height = (int) (14 * progress);
-            if (height > 0) {
-                drawTexture(matrices, x + 61, y + 37 + (14 - height), 181, 14 - height, 14, height);
-                drawTexture(matrices, x + 109, y + 37 + (14 - height), 181, 14 - height, 14, height);
-            }
-        }
+        // Do nothing
     }
 
     @Override
@@ -44,6 +37,24 @@ public class SimpleAlloySmelterScreen extends HandledScreen<BuiltScreenHandler> 
         int x = (width - backgroundWidth) / 2;
         int y = (height - backgroundHeight) / 2;
         drawTexture(matrices, x, y, 0, 0, backgroundWidth, backgroundHeight);
+
+        // Draw the crafting progress
+        if (handler.isCrafting()) {
+            float progress = handler.getScaledProgress();
+            int height = (int) (14 * progress);
+            if (height > 0) {
+                drawTexture(matrices, x + 61, y + 37 + (14 - height), 181, 14 - height, 14, height);
+                drawTexture(matrices, x + 109, y + 37 + (14 - height), 181, 14 - height, 14, height);
+            }
+        }
+
+        // Draw the energy
+        RenderSystem.setShaderTexture(0, OVERLAY_TEXTURE);
+        float energy = handler.getScaledEnergy();
+        int height = (int) (42 * energy);
+        if (height > 0) {
+            drawTexture(matrices, x + 16, y + 14 + (42 - height), 0, 128, 9, height);
+        }
     }
 
     @Override
@@ -51,5 +62,15 @@ public class SimpleAlloySmelterScreen extends HandledScreen<BuiltScreenHandler> 
         renderBackground(matrices);
         super.render(matrices, mouseX, mouseY, delta);
         drawMouseoverTooltip(matrices, mouseX, mouseY);
+    }
+
+    @Override
+    protected void drawMouseoverTooltip(MatrixStack matrices, int x, int y) {
+        // Energy mouseover tooltip
+        if (isPointWithinBounds(16, 14, 9, 42, x, y)) {
+            renderTooltip(matrices, handler.getEnergyTooltipLines(), x, y);
+        }
+
+        super.drawMouseoverTooltip(matrices, x, y);
     }
 }
