@@ -10,13 +10,20 @@ public class ModRecipes {
                 AlloyingRecipe.Serializer.INSTANCE);
         Registry.register(Registry.RECIPE_TYPE, new Identifier(EnderIOReforgedBaseMod.MOD_ID, AlloyingRecipe.Type.ID),
                 AlloyingRecipe.Type.INSTANCE);
+
         Registry.register(Registry.RECIPE_SERIALIZER, new Identifier(EnderIOReforgedBaseMod.MOD_ID, VanillaSmeltingRecipe.Serializer.ID),
                 VanillaSmeltingRecipe.Serializer.INSTANCE);
         Registry.register(Registry.RECIPE_TYPE, new Identifier(EnderIOReforgedBaseMod.MOD_ID, VanillaSmeltingRecipe.Type.ID),
                 VanillaSmeltingRecipe.Type.INSTANCE);
+
         Registry.register(Registry.RECIPE_SERIALIZER, new Identifier(EnderIOReforgedBaseMod.MOD_ID, WorldInteractionRecipe.Serializer.ID),
                 WorldInteractionRecipe.Serializer.INSTANCE);
         Registry.register(Registry.RECIPE_TYPE, new Identifier(EnderIOReforgedBaseMod.MOD_ID, WorldInteractionRecipe.Type.ID),
                 WorldInteractionRecipe.Type.INSTANCE);
+
+        Registry.register(Registry.RECIPE_TYPE, new Identifier(EnderIOReforgedBaseMod.MOD_ID, CrushingRecipe.Type.ID),
+                CrushingRecipe.Type.INSTANCE);
+        Registry.register(Registry.RECIPE_SERIALIZER, new Identifier(EnderIOReforgedBaseMod.MOD_ID, CrushingRecipe.Serializer.ID),
+                CrushingRecipe.Serializer.INSTANCE);
     }
 }

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "FFF",
+    "DCD",
+    "GPG"
+  ],
+  "key": {
+    "F": { "item": "minecraft:flint" },
+    "D": { "item": "enderio-reforged:dark_steel_ingot" },
+    "C": { "item": "enderio-reforged:industrial_machine_chassis" },
+    "G": { "item": "enderio-reforged:dark_steel_gear" },
+    "P": { "item": "minecraft:piston" }
+  },
+  "result": {
+    "item": "enderio-reforged:sag_mill"
+  }
+}

@@ -14,6 +14,7 @@ import richiesams.enderio.reforged.items.ModItemGroup;
 public class ModBlocks {
     public static Block ALLOY_SMELTER;
     public static Block SIMPLE_ALLOY_SMELTER;
+    public static Block SAG_MILL;
     public static Block CONDUIT_BUNDLE;
 
 
@@ -32,6 +33,8 @@ public class ModBlocks {
                 new AlloySmelterBlock(FabricBlockSettings.of(Material.METAL).strength(6f)), ModItemGroup.ENDERIO_REFORGED);
         SIMPLE_ALLOY_SMELTER = registerBlock("simple_alloy_smelter",
                 new SimpleAlloySmelterBlock(FabricBlockSettings.of(Material.METAL).strength(6f)), ModItemGroup.ENDERIO_REFORGED);
+        SAG_MILL = registerBlock("sag_mill",
+                new SagMillBlock(FabricBlockSettings.of(Material.METAL).strength(6f)), ModItemGroup.ENDERIO_REFORGED);
 
         CONDUIT_BUNDLE = Registry.register(Registry.BLOCK,
                 new Identifier(EnderIOReforgedBaseMod.MOD_ID, "conduit_bundle"),

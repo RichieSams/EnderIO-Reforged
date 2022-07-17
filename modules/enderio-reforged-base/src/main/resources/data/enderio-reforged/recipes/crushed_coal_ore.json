@@ -1,0 +1,25 @@
+{
+  "type": "enderio-reforged:crushing",
+  "ingredient": {
+    "item": "minecraft:coal_ore"
+  },
+  "results": [
+    {
+      "item": "enderio-reforged:coal_powder",
+      "count": 1,
+      "chance": 0.6
+    },
+    {
+      "item": "minecraft:diamond",
+      "count": 1,
+      "chance": 0.001
+    },
+    {
+      "item": "minecraft:cobblestone",
+      "count": 1,
+      "chance": 0.15
+    }
+  ],
+  "power": 6,
+  "time": 600
+}

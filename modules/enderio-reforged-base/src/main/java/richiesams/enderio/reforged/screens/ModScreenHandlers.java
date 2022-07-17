@@ -11,6 +11,7 @@ import richiesams.enderio.reforged.EnderIOReforgedBaseMod;
 public class ModScreenHandlers {
     public static ExtendedScreenHandlerType<BuiltScreenHandler> ALLOY_SMELTER_SCREEN_HANDLER;
     public static ExtendedScreenHandlerType<BuiltScreenHandler> SIMPLE_ALLOY_SMELTER_SCREEN_HANDLER;
+    public static ExtendedScreenHandlerType<BuiltScreenHandler> SAG_MILL_SCREEN_HANDLER;
 
     private static BuiltScreenHandler create(int syncId, PlayerInventory inventory, PacketByteBuf buf) {
         final BlockEntity blockEntity = inventory.player.world.getBlockEntity(buf.readBlockPos());
@@ -23,6 +24,9 @@ public class ModScreenHandlers {
                 new ExtendedScreenHandlerType<>(ModScreenHandlers::create));
         SIMPLE_ALLOY_SMELTER_SCREEN_HANDLER = Registry.register(Registry.SCREEN_HANDLER,
                 new Identifier(EnderIOReforgedBaseMod.MOD_ID, "simple_alloy_smelter"),
+                new ExtendedScreenHandlerType<>(ModScreenHandlers::create));
+        SAG_MILL_SCREEN_HANDLER = Registry.register(Registry.SCREEN_HANDLER,
+                new Identifier(EnderIOReforgedBaseMod.MOD_ID, "sag_mill"),
                 new ExtendedScreenHandlerType<>(ModScreenHandlers::create));
     }
 }

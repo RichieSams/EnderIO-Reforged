@@ -29,6 +29,7 @@
 
   "block.enderio-reforged.simple_alloy_smelter": "Simple Alloy Smelter",
   "block.enderio-reforged.alloy_smelter": "Alloy Smelter",
+  "block.enderio-reforged.sag_mill": "SAG Mill",
 
   "tooltip.enderio-reforged.more_info": "Hold Shift for more info",
   "tooltip.enderio-reforged.max_input": "Max input: ",

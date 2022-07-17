@@ -1,0 +1,19 @@
+{
+  "type": "enderio-reforged:crushing",
+  "ingredient": {
+    "item": "minecraft:coal"
+  },
+  "results": [
+    {
+      "item": "enderio-reforged:coal_powder",
+      "count": 1
+    },
+    {
+      "item": "enderio-reforged:coal_powder",
+      "count": 1,
+      "chance": 0.1
+    }
+  ],
+  "power": 6,
+  "time": 600
+}

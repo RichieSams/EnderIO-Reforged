@@ -10,6 +10,7 @@ import richiesams.enderio.reforged.blocks.ModBlocks;
 public class ModBlockEntities {
     public static BlockEntityType<AlloySmelterBlockEntity> ALLOY_SMELTER;
     public static BlockEntityType<SimpleAlloySmelterBlockEntity> SIMPLE_ALLOY_SMELTER;
+    public static BlockEntityType<SagMillBlockEntity> SAG_MILL;
     public static BlockEntityType<ConduitBundleBlockEntity> CONDUIT_BUNDLE;
 
     @SuppressWarnings("UnstableApiUsage")
@@ -23,6 +24,11 @@ public class ModBlockEntities {
                 new Identifier(EnderIOReforgedBaseMod.MOD_ID, "simple_alloy_smelter"),
                 FabricBlockEntityTypeBuilder.create(SimpleAlloySmelterBlockEntity::new, ModBlocks.SIMPLE_ALLOY_SMELTER).build(null));
         SimpleAlloySmelterBlockEntity.registerStorage(SIMPLE_ALLOY_SMELTER);
+
+        SAG_MILL = Registry.register(Registry.BLOCK_ENTITY_TYPE,
+                new Identifier(EnderIOReforgedBaseMod.MOD_ID, "sag_mill"),
+                FabricBlockEntityTypeBuilder.create(SagMillBlockEntity::new, ModBlocks.SAG_MILL).build(null));
+        SagMillBlockEntity.registerStorage(SAG_MILL);
 
         CONDUIT_BUNDLE = Registry.register(Registry.BLOCK_ENTITY_TYPE,
                 new Identifier(EnderIOReforgedBaseMod.MOD_ID, "conduit_bundle"),

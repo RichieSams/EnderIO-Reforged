@@ -15,6 +15,7 @@ import richiesams.enderio.reforged.blocks.ModBlocks;
 import richiesams.enderio.reforged.rendering.ConduitBundleModelProvider;
 import richiesams.enderio.reforged.screens.AlloySmelterScreen;
 import richiesams.enderio.reforged.screens.ModScreenHandlers;
+import richiesams.enderio.reforged.screens.SagMillScreen;
 import richiesams.enderio.reforged.screens.SimpleAlloySmelterScreen;
 
 import java.util.Map.Entry;
@@ -27,6 +28,7 @@ public class EnderIOReforgedBaseClientMod implements ClientModInitializer {
 
         HandledScreens.register(ModScreenHandlers.ALLOY_SMELTER_SCREEN_HANDLER, AlloySmelterScreen::new);
         HandledScreens.register(ModScreenHandlers.SIMPLE_ALLOY_SMELTER_SCREEN_HANDLER, SimpleAlloySmelterScreen::new);
+        HandledScreens.register(ModScreenHandlers.SAG_MILL_SCREEN_HANDLER, SagMillScreen::new);
 
         ClientSpriteRegistryCallback.event(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).register(((atlasTexture, registry) -> {
             EnderIOReforgedBaseMod.LOGGER.info("Registering conduit textures");
