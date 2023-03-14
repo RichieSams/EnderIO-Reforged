@@ -13,6 +13,8 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.World;
+import richiesams.enderio.reforged.api.grinding_balls.GrindingBallBonus;
+import richiesams.enderio.reforged.api.util.SerializationUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,13 +25,15 @@ public class CrushingRecipe implements Recipe<Inventory> {
     private final Ingredient input;
     private final int power;
     private final int time;
+    private final GrindingBallBonus bonus;
 
-    public CrushingRecipe(Identifier id, List<CrushingOutput> outputs, Ingredient input, int power, int time) {
+    public CrushingRecipe(Identifier id, List<CrushingOutput> outputs, Ingredient input, int power, int time, GrindingBallBonus bonus) {
         this.id = id;
         this.outputs = outputs;
         this.input = input;
         this.power = power;
         this.time = time;
+        this.bonus = bonus;
     }
 
     @Override
@@ -77,12 +81,12 @@ public class CrushingRecipe implements Recipe<Inventory> {
         return copiedOutputs;
     }
 
-    public int getCookTime() {
-        return time;
+    public int getRecipePowerCost() {
+        return power;
     }
 
-    public int getEUPerTick() {
-        return power;
+    public GrindingBallBonus getBonus() {
+        return bonus;
     }
 
     @Override
@@ -126,7 +130,13 @@ public class CrushingRecipe implements Recipe<Inventory> {
             int power = JsonHelper.getInt(json, "power");
             int time = JsonHelper.getInt(json, "time");
 
-            return new CrushingRecipe(id, outputs, input, power, time);
+            // Default to MULTIPLY_OUTPUT, if it doesn't exist
+            GrindingBallBonus bonus = GrindingBallBonus.MULTIPLY_OUTPUT;
+            if (json.has("bonus")) {
+                bonus = SerializationUtil.GSON.fromJson(json.get("bonus"), GrindingBallBonus.class);
+            }
+
+            return new CrushingRecipe(id, outputs, input, power, time, bonus);
         }
 
         private static List<CrushingOutput> getOutputs(JsonArray json) {
@@ -165,7 +175,9 @@ public class CrushingRecipe implements Recipe<Inventory> {
             int power = buf.readInt();
             int time = buf.readInt();
 
-            return new CrushingRecipe(id, outputs, input, power, time);
+            GrindingBallBonus bonus = GrindingBallBonus.getBonusByString(buf.readString());
+
+            return new CrushingRecipe(id, outputs, input, power, time, bonus);
         }
 
         @Override
@@ -179,6 +191,8 @@ public class CrushingRecipe implements Recipe<Inventory> {
 
             buf.writeInt(recipe.power);
             buf.writeInt(recipe.time);
+
+            buf.writeString(recipe.bonus.toString());
         }
     }
 }

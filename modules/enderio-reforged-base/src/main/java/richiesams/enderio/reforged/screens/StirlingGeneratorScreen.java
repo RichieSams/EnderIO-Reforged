@@ -9,11 +9,11 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import richiesams.enderio.reforged.EnderIOReforgedBaseMod;
 
-public class SagMillScreen extends HandledScreen<BuiltScreenHandler> {
-    private static final Identifier TEXTURE = new Identifier(EnderIOReforgedBaseMod.MOD_ID, "textures/gui/sag_mill.png");
+public class StirlingGeneratorScreen extends HandledScreen<BuiltScreenHandler> {
+    private static final Identifier TEXTURE = new Identifier(EnderIOReforgedBaseMod.MOD_ID, "textures/gui/alloy_smelter_auto.png");
     private static final Identifier OVERLAY_TEXTURE = new Identifier(EnderIOReforgedBaseMod.MOD_ID, "textures/gui/overlay.png");
 
-    public SagMillScreen(BuiltScreenHandler handler, PlayerInventory inventory, Text title) {
+    public StirlingGeneratorScreen(BuiltScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
     }
 
@@ -38,26 +38,19 @@ public class SagMillScreen extends HandledScreen<BuiltScreenHandler> {
         int y = (height - backgroundHeight) / 2;
         drawTexture(matrices, x, y, 0, 0, backgroundWidth, backgroundHeight);
 
-        // Draw the crafting progress
+        // Draw the burning progress
         if (handler.isCrafting()) {
             float progress = handler.getScaledProgress();
-            int height = (int) (24 * progress);
+            int height = (int) (14 * progress);
             if (height > 0) {
-                drawTexture(matrices, x + 79, y + 31, 200, 0, 17, height);
+                drawTexture(matrices, x + 81, y + 53 + (14 - height), 176, 14 - height, 14, height);
             }
-        }
-
-        // Draw the grinding ball durability remaining
-        float durability = handler.getConsumableScaledDurabilityRemaining();
-        int height = (int) (16 * durability);
-        if (height > 0) {
-            drawTexture(matrices, x + 142, y + 23 + (16 - height), 186, 31, 5, height);
         }
 
         // Draw the energy
         RenderSystem.setShaderTexture(0, OVERLAY_TEXTURE);
         float energy = handler.getScaledEnergy();
-        height = (int) (42 * energy);
+        int height = (int) (42 * energy);
         if (height > 0) {
             drawTexture(matrices, x + 16, y + 14 + (42 - height), 0, 128, 9, height);
         }

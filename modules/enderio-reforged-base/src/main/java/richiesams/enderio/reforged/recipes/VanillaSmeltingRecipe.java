@@ -14,6 +14,7 @@ import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import richiesams.enderio.reforged.EnderIOReforgedBaseMod;
+import richiesams.enderio.reforged.blockentities.StirlingGeneratorBlockEntity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,14 +25,14 @@ public class VanillaSmeltingRecipe implements Recipe<Inventory> {
     private final ItemStack output;
     private final DefaultedList<Ingredient> inputs;
     private final float experience;
-    private final int time;
+    private final int power;
 
-    private VanillaSmeltingRecipe(Identifier id, ItemStack output, DefaultedList<Ingredient> inputs, float experience, int time) {
+    private VanillaSmeltingRecipe(Identifier id, ItemStack output, DefaultedList<Ingredient> inputs, float experience, int power) {
         this.id = id;
         this.output = output;
         this.inputs = inputs;
         this.experience = experience;
-        this.time = time;
+        this.power = power;
     }
 
     public static Optional<VanillaSmeltingRecipe> getFirstMatch(World world, Inventory inventory, ItemStack currentOutput, int maxOutputStacks) {
@@ -102,12 +103,14 @@ public class VanillaSmeltingRecipe implements Recipe<Inventory> {
 
         ItemStack output = pickedRecipe.getOutput().copy();
         output.setCount(count);
+
+        int power = pickedRecipe.getCookTime() / StirlingGeneratorBlockEntity.burnTimeDivisor * 10;
         return Optional.of(new VanillaSmeltingRecipe(
                 new Identifier(EnderIOReforgedBaseMod.MOD_ID, Serializer.ID),
                 output,
                 ingredients,
                 pickedRecipe.getExperience() * count,
-                pickedRecipe.getCookTime() * count)
+                pickedRecipe.getCookTime() * count * 6)
         );
     }
 
@@ -142,8 +145,8 @@ public class VanillaSmeltingRecipe implements Recipe<Inventory> {
         return inputs;
     }
 
-    public int getCookTime() {
-        return time;
+    public int getRecipePowerCost() {
+        return power;
     }
 
     public float getExperience() {
@@ -180,7 +183,7 @@ public class VanillaSmeltingRecipe implements Recipe<Inventory> {
         public VanillaSmeltingRecipe read(Identifier id, JsonObject json) {
             DefaultedList<Ingredient> inputs = VanillaSmeltingRecipe.Serializer.getIngredients(JsonHelper.getArray(json, "ingredients"));
             if (inputs.isEmpty()) {
-                throw new JsonParseException("No ingredients for alloying recipe");
+                throw new JsonParseException("No ingredients for vanilla smelting recipe");
             }
             ItemStack output = ShapedRecipe.outputFromJson(JsonHelper.getObject(json, "result"));
 
@@ -212,9 +215,9 @@ public class VanillaSmeltingRecipe implements Recipe<Inventory> {
             ItemStack output = buf.readItemStack();
 
             float experience = buf.readFloat();
-            int time = buf.readInt();
+            int power = buf.readInt();
 
-            return new VanillaSmeltingRecipe(id, output, inputs, experience, time);
+            return new VanillaSmeltingRecipe(id, output, inputs, experience, power);
         }
 
         @Override
@@ -228,7 +231,7 @@ public class VanillaSmeltingRecipe implements Recipe<Inventory> {
             buf.writeItemStack(recipe.getOutput());
 
             buf.writeFloat(recipe.experience);
-            buf.writeInt(recipe.time);
+            buf.writeInt(recipe.power);
         }
     }
 }

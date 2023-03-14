@@ -12,8 +12,10 @@ import net.minecraft.world.World;
 import richiesams.enderio.reforged.recipes.CrushingRecipe;
 import richiesams.enderio.reforged.recipes.RecipeHelper;
 import richiesams.enderio.reforged.screens.BuiltScreenHandler;
+import richiesams.enderio.reforged.screens.ConsumableItemStatusProvider;
 import richiesams.enderio.reforged.screens.ModScreenHandlers;
 import richiesams.enderio.reforged.screens.ScreenHandlerBuilder;
+import richiesams.enderio.reforged.util.EnderIOInventory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,8 +23,15 @@ import java.util.Optional;
 
 import static richiesams.enderio.reforged.blockentities.ModBlockEntities.SAG_MILL;
 
-public class SagMillBlockEntity extends AbstractMachineBlockEntity {
+public class SagMillBlockEntity extends AbstractMachineBlockEntity implements ConsumableItemStatusProvider {
     private List<ItemStack> recipeOutputs = new ArrayList<>();
+    protected final EnderIOInventory grindingBallInventory;
+    protected float grindingBallOutputMultiplier;
+    protected float grindingBallChanceMultiplier;
+    protected float grindingBallPowerMultiplier;
+    protected long grindingBallDurability;
+    protected long grindingBallDurabilityMax;
+    protected boolean recipeUsesGrindingBall;
 
     private static final int InputSize = 1;
     private static final int OutputSize = 4;
@@ -34,6 +43,14 @@ public class SagMillBlockEntity extends AbstractMachineBlockEntity {
         super(SAG_MILL, pos, state,
                 InputSize, OutputSize,
                 BaseEnergyStorageSize, BaseMaxEnergyInsertion, MaxEnergyExtraction);
+
+        grindingBallInventory = createInventory(this, 1, 1);
+        grindingBallOutputMultiplier = 1.0f;
+        grindingBallChanceMultiplier = 1.0f;
+        grindingBallPowerMultiplier = 1.0f;
+        grindingBallDurability = 0;
+        grindingBallDurabilityMax = 0;
+        recipeUsesGrindingBall = false;
     }
 
     @SuppressWarnings("UnstableApiUsage")
@@ -130,6 +147,12 @@ public class SagMillBlockEntity extends AbstractMachineBlockEntity {
         for (int i = 0; i < outputs.size(); ++i) {
             recipeOutputs.add(ItemStack.fromNbt(outputs.getCompound(i)));
         }
+        grindingBallInventory.readNbtList(nbt.getList("GrindingBall", 10));
+        grindingBallOutputMultiplier = nbt.getFloat("GrindingBallOutputMultiplier");
+        grindingBallChanceMultiplier = nbt.getFloat("GrindingBallChanceMultiplier");
+        grindingBallPowerMultiplier = nbt.getFloat("GrindingBallPowerMultiplier");
+        grindingBallDurability = nbt.getLong("GrindingBallDurability");
+        grindingBallDurabilityMax = nbt.getLong("GrindingBallDurabilityMax");
     }
 
     @Override
@@ -140,7 +163,13 @@ public class SagMillBlockEntity extends AbstractMachineBlockEntity {
             output.writeNbt(compound);
             outputs.add(compound);
         }
+        nbt.put("GrindingBall", grindingBallInventory.toNbtList());
         nbt.put("RecipeOutputs", outputs);
+        nbt.putFloat("GrindingBallOutputMultiplier", grindingBallOutputMultiplier);
+        nbt.putFloat("GrindingBallChanceMultiplier", grindingBallChanceMultiplier);
+        nbt.putFloat("GrindingBallPowerMultiplier", grindingBallPowerMultiplier);
+        nbt.putLong("GrindingBallDurability", grindingBallDurability);
+        nbt.putLong("GrindingBallDurabilityMax", grindingBallDurabilityMax);
 
         super.writeNbt(nbt);
     }
@@ -152,6 +181,16 @@ public class SagMillBlockEntity extends AbstractMachineBlockEntity {
                 .blockEntity(capacitorInventory).addCapacitorSlot(0, 12, 60).finish()
                 .blockEntity(inputsInventory).addSlot(0, 80, 12).finish()
                 .blockEntity(outputsInventory).addOutputSlot(0, 49, 59).addOutputSlot(1, 70, 59).addOutputSlot(2, 91, 59).addOutputSlot(3, 112, 59).finish()
+                .blockEntity(grindingBallInventory).addGrindingBallSlot(0, 122, 23).finish()
                 .build(this, syncID);
+    }
+
+    @Override
+    public float getConsumableScaledDurabilityRemaining() {
+        if (grindingBallDurabilityMax == 0) {
+            return 0.0f;
+        }
+
+        return (float) ((double) grindingBallDurability / (double) grindingBallDurabilityMax);
     }
 }

@@ -45,10 +45,20 @@ public abstract class AbstractSimpleMachineBlockEntity extends BlockEntity imple
                                             int energyCapacity, int maxEnergyInsertion, int maxEnergyExtraction) {
         super(type, pos, state);
 
-        inputsInventory = createInventory(this, inputsSize);
-        outputsInventory = createInventory(this, outputsSize);
-        inputStorage = InventoryStorage.of(inputsInventory, null);
-        outputStorage = InventoryStorage.of(outputsInventory, null);
+        if (inputsSize > 0) {
+            inputsInventory = createInventory(this, inputsSize);
+            inputStorage = InventoryStorage.of(inputsInventory, null);
+        } else {
+            inputsInventory = null;
+            inputStorage = null;
+        }
+        if (outputsSize > 0) {
+            outputsInventory = createInventory(this, outputsSize);
+            outputStorage = InventoryStorage.of(outputsInventory, null);
+        } else {
+            outputsInventory = null;
+            outputStorage = null;
+        }
 
         energyStorage = new SimpleEnergyStorage(energyCapacity, maxEnergyInsertion, maxEnergyExtraction) {
             @Override
@@ -89,8 +99,12 @@ public abstract class AbstractSimpleMachineBlockEntity extends BlockEntity imple
         progress = nbt.getInt("Progress");
         progressTotal = nbt.getInt("ProgressTotal");
         EUPerTick = nbt.getInt("EUPerTick");
-        inputsInventory.readNbtList(nbt.getList("Inputs", 10));
-        outputsInventory.readNbtList(nbt.getList("Outputs", 10));
+        if (nbt.contains("Inputs")) {
+            inputsInventory.readNbtList(nbt.getList("Inputs", 10));
+        }
+        if (nbt.contains("Outputs")) {
+            outputsInventory.readNbtList(nbt.getList("Outputs", 10));
+        }
         energyStorage.amount = nbt.getLong("Energy");
     }
 
@@ -99,8 +113,12 @@ public abstract class AbstractSimpleMachineBlockEntity extends BlockEntity imple
         nbt.putInt("Progress", progress);
         nbt.putInt("ProgressTotal", progressTotal);
         nbt.putInt("EUPerTick", EUPerTick);
-        nbt.put("Inputs", inputsInventory.toNbtList());
-        nbt.put("Outputs", outputsInventory.toNbtList());
+        if (inputsInventory != null) {
+            nbt.put("Inputs", inputsInventory.toNbtList());
+        }
+        if (outputsInventory != null) {
+            nbt.put("Outputs", outputsInventory.toNbtList());
+        }
         nbt.putLong("Energy", energyStorage.amount);
         super.writeNbt(nbt);
     }

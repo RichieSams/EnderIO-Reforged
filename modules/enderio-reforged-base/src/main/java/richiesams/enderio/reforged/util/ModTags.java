@@ -9,9 +9,11 @@ import richiesams.enderio.reforged.EnderIOReforgedBaseMod;
 public class ModTags {
     public static class Items {
         public static TagKey<Item> CAPACITORS;
+        public static TagKey<Item> GRINDING_BALLS;
 
         public static void registerItemTags() {
             CAPACITORS = TagKey.of(Registry.ITEM_KEY, new Identifier(EnderIOReforgedBaseMod.MOD_ID, "capacitors"));
+            GRINDING_BALLS = TagKey.of(Registry.ITEM_KEY, new Identifier(EnderIOReforgedBaseMod.MOD_ID, "grinding_balls"));
         }
     }
 

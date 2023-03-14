@@ -209,6 +209,15 @@ public class BuiltScreenHandler extends ScreenHandler {
         return (float) ((double) current / (double) capacity);
     }
 
+    public float getConsumableScaledDurabilityRemaining() {
+        Objects.requireNonNull(blockEntity);
+
+        if (blockEntity instanceof ConsumableItemStatusProvider provider) {
+            return provider.getConsumableScaledDurabilityRemaining();
+        }
+        return 0.0f;
+    }
+
     public List<Text> getEnergyTooltipLines() {
         return blockEntity.getEnergyTooltipLines();
     }

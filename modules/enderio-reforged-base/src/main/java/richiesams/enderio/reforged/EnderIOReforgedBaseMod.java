@@ -8,6 +8,7 @@ import richiesams.enderio.reforged.blockentities.ModBlockEntities;
 import richiesams.enderio.reforged.blocks.ModBlocks;
 import richiesams.enderio.reforged.conduits.ModConduits;
 import richiesams.enderio.reforged.events.ModEventHandlers;
+import richiesams.enderio.reforged.grinding_balls.ModGrindingBalls;
 import richiesams.enderio.reforged.items.ModItems;
 import richiesams.enderio.reforged.recipes.ModRecipes;
 import richiesams.enderio.reforged.screens.ModScreenHandlers;
@@ -34,6 +35,7 @@ public class EnderIOReforgedBaseMod implements ModInitializer {
         ModBlocks.registerBlocks();
         ModBlockEntities.registerBlockEntities();
         ModItems.registerItems();
+        ModGrindingBalls.registerGrindingBalls();
         ModScreenHandlers.registerScreenHandlers();
         ModTags.Items.registerItemTags();
         ModTags.Blocks.registerBlockTags();

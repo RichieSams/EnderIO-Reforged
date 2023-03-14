@@ -23,6 +23,4 @@ public class ModConduits {
                 BasicFluidConduitEntity::new
         );
     }
-
-
 }
