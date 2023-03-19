@@ -29,6 +29,7 @@ public class ModItems {
     public static Item INDUSTRIAL_MACHINE_CHASSIS;
     public static Item ITEM_CONDUIT;
     public static Item BASIC_FLUID_CONDUIT;
+    public static Item ENERGY_CONDUIT;
     public static Item VANILLA_FIRE;
 
     private static Item registerItem(String name, Item item) {
@@ -73,6 +74,8 @@ public class ModItems {
                 new ConduitItem(ModConduits.ITEM_CONDUIT, new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
         BASIC_FLUID_CONDUIT = registerItem("basic_fluid_conduit",
                 new ConduitItem(ModConduits.BASIC_FLUID_CONDUIT, new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
+        ENERGY_CONDUIT = registerItem("energy_conduit",
+                new ConduitItem(ModConduits.ENERGY_CONDUIT, new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));
 
         VANILLA_FIRE = Registry.register(Registry.ITEM, new Identifier(EnderIOReforgedBaseMod.MOD_ID, "fire"),
                 new BlockItem(Blocks.FIRE, new FabricItemSettings().group(ModItemGroup.ENDERIO_REFORGED)));

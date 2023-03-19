@@ -10,18 +10,24 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import richiesams.enderio.reforged.EnderIOReforgedBaseMod;
 import richiesams.enderio.reforged.api.EnderIOReforgedRegistries;
+import richiesams.enderio.reforged.blockentities.ConduitBundleBlockEntity;
 
 import java.util.HashMap;
 
 public abstract class ConduitEntity {
     protected final Conduit conduit;
+    protected final ConduitBundleBlockEntity blockEntity;
     protected HashMap<Direction, ConduitConnection> connections;
     protected boolean updateConnections;
 
-    protected ConduitEntity(Conduit conduit) {
+    public long lastTick;
+
+    protected ConduitEntity(Conduit conduit, ConduitBundleBlockEntity blockEntity) {
         this.conduit = conduit;
+        this.blockEntity = blockEntity;
         this.connections = new HashMap<>();
         this.updateConnections = true;
+        this.lastTick = 0;
     }
 
     public abstract boolean tick(World world, BlockPos pos, BlockState state);
@@ -65,12 +71,24 @@ public abstract class ConduitEntity {
         return conduit;
     }
 
+    public ConduitBundleBlockEntity getHostingBlockEntity() {
+        return blockEntity;
+    }
+
+    public void addConnection(Direction direction, ConduitConnection connection) {
+        connections.put(direction, connection);
+    }
+
+    public void clearAllConnections() {
+        connections.clear();
+    }
+
     public HashMap<Direction, ConduitConnection> getConnections() {
         return connections;
     }
 
     @Nullable
-    public static ConduitEntity fromNBT(NbtCompound nbt) {
+    public static ConduitEntity fromNBT(ConduitBundleBlockEntity blockEntity, NbtCompound nbt) {
         String identifierStr = nbt.getString("id");
         Identifier identifier = Identifier.tryParse(identifierStr);
         if (identifier == null) {
@@ -79,7 +97,7 @@ public abstract class ConduitEntity {
         }
         return EnderIOReforgedRegistries.CONDUIT.getOrEmpty(identifier).map(type -> {
             try {
-                return type.createConduitEntity();
+                return type.createConduitEntity(blockEntity);
             } catch (Throwable throwable) {
                 EnderIOReforgedBaseMod.LOGGER.error("Failed to create conduit entity %s - %s".formatted(identifierStr, throwable));
                 return null;

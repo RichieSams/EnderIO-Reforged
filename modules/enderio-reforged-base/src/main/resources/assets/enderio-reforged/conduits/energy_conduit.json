@@ -1,0 +1,19 @@
+{
+  "group": "energy",
+  "tier": 0,
+
+  "eastWestOffset": "down",
+  "upDownOffset": "south",
+  "northSouthOffset": "down",
+
+  "core": {
+    "texture": "enderio-reforged:conduit/conduit_core_0",
+    "uv": [ 0, 0, 8, 8 ]
+  },
+  "connector": {
+    "outer": {
+      "texture": "enderio-reforged:conduit/energy_conduit",
+      "uv": [ 0, 0, 13, 4 ]
+    }
+  }
+}

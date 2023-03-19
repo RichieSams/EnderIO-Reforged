@@ -93,7 +93,7 @@ public class ConduitBundleBlockEntity extends BlockEntity implements RenderAttac
                     if (conduit.Tier > backingConduit.Tier) {
                         // Replace the existing conduit
                         // TODO: We'll need to do some kind of transfer of internal data
-                        ConduitEntity newConduitEntity = conduit.createConduitEntity();
+                        ConduitEntity newConduitEntity = conduit.createConduitEntity(this);
 
                         // Add it back to the user's inventory if able, or drop it
                         ItemStack oldConduitItemStack = conduitEntity.getBackingConduit().toItemStack();
@@ -113,7 +113,7 @@ public class ConduitBundleBlockEntity extends BlockEntity implements RenderAttac
                 }
             }
 
-            conduitEntities.put(UUID.randomUUID(), conduit.createConduitEntity());
+            conduitEntities.put(UUID.randomUUID(), conduit.createConduitEntity(this));
             markDirty();
             world.updateListeners(pos, world.getBlockState(pos), world.getBlockState(pos), Block.NOTIFY_LISTENERS);
             return true;
@@ -121,6 +121,33 @@ public class ConduitBundleBlockEntity extends BlockEntity implements RenderAttac
 
         return false;
     }
+
+    @Nullable
+    public ConduitEntity getConduitEntityOfType(String group) {
+        for (var entry : conduitEntities.entrySet()) {
+            ConduitEntity entity = entry.getValue();
+            Conduit conduit = entity.getBackingConduit();
+            if (Objects.equals(group, conduit.Group)) {
+                return entity;
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public ConduitEntity getConduitEntityOfType(String group, int tier) {
+        for (var entry : conduitEntities.entrySet()) {
+            ConduitEntity entity = entry.getValue();
+            Conduit conduit = entity.getBackingConduit();
+            if (Objects.equals(group, conduit.Group) && tier == conduit.Tier) {
+                return entity;
+            }
+        }
+
+        return null;
+    }
+
 
     private void regenerateShapes() {
         conduitShapes.clear();
@@ -181,7 +208,7 @@ public class ConduitBundleBlockEntity extends BlockEntity implements RenderAttac
         HashMap<UUID, ConduitEntity> newConduits = new HashMap<>();
         NbtCompound conduits = nbt.getCompound("Conduits");
         for (String uuid : conduits.getKeys()) {
-            ConduitEntity entity = ConduitEntity.fromNBT(conduits.getCompound(uuid));
+            ConduitEntity entity = ConduitEntity.fromNBT(this, conduits.getCompound(uuid));
             newConduits.put(UUID.fromString(uuid), entity);
         }
 

@@ -11,6 +11,7 @@ import net.minecraft.util.registry.Registry;
 import richiesams.enderio.reforged.EnderIOReforgedBaseMod;
 import richiesams.enderio.reforged.api.EnderIOReforgedRegistries;
 import richiesams.enderio.reforged.api.util.SerializationUtil;
+import richiesams.enderio.reforged.blockentities.ConduitBundleBlockEntity;
 
 public class Conduit {
     public final ConduitOffset EastWestOffset;
@@ -81,12 +82,12 @@ public class Conduit {
         return item.getDefaultStack();
     }
 
-    public ConduitEntity createConduitEntity() {
-        return factory.create(this);
+    public ConduitEntity createConduitEntity(ConduitBundleBlockEntity blockEntity) {
+        return factory.create(this, blockEntity);
     }
 
     @FunctionalInterface
     public interface Factory<T extends ConduitEntity> {
-        T create(Conduit conduit);
+        T create(Conduit conduit, ConduitBundleBlockEntity blockEntity);
     }
 }

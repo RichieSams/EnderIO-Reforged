@@ -8,6 +8,7 @@ import richiesams.enderio.reforged.api.conduits.ConduitRegistryUtil;
 public class ModConduits {
     public static Conduit ITEM_CONDUIT;
     public static Conduit BASIC_FLUID_CONDUIT;
+    public static Conduit ENERGY_CONDUIT;
 
     public static void registerConduits() {
         EnderIOReforgedBaseMod.LOGGER.info("Registering conduits");
@@ -22,7 +23,19 @@ public class ModConduits {
                 Conduit::new,
                 BasicFluidConduitEntity::new
         );
+        ENERGY_CONDUIT = ConduitRegistryUtil.registerConduit(
+                new Identifier(EnderIOReforgedBaseMod.MOD_ID, "energy_conduit"),
+                Conduit::new,
+                EnergyConduitEntity::new
+        );
+
+//        EnergyStorage.SIDED.registerForBlockEntity(
+//                (blockEntity, direction) -> {
+//                    blockEntity.getConduitEntityOfType(EnergyConduitEntity.ConduitGroup);
+//
+//                    return null;
+//                },
+//                ModBlockEntities.CONDUIT_BUNDLE
+//        );
     }
-
-
 }

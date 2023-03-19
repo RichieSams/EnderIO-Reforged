@@ -11,8 +11,8 @@ import richiesams.enderio.reforged.api.conduits.ConduitEntity;
 import richiesams.enderio.reforged.blockentities.ConduitBundleBlockEntity;
 
 public class ItemConduitEntity extends ConduitEntity {
-    public ItemConduitEntity(Conduit conduit) {
-        super(conduit);
+    public ItemConduitEntity(Conduit conduit, ConduitBundleBlockEntity blockEntity) {
+        super(conduit, blockEntity);
     }
 
     @Override
