@@ -3,6 +3,7 @@ package richiesams.enderio.reforged.conduits;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.lookup.v1.block.BlockApiCache;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import richiesams.enderio.reforged.api.conduits.Conduit;
 import richiesams.enderio.reforged.api.conduits.ConduitEntity;
@@ -16,6 +17,8 @@ import java.util.Queue;
 
 public class EnergyConduitNetwork {
     static long globalTickCounter = 0;
+
+    public EnergyStorage innerStorage;
 
     private List<EnergyConduitEntity> conduits;
     private List<EnergyStorage> targets;
@@ -38,62 +41,68 @@ public class EnergyConduitNetwork {
 
         EnergyConduitEntity current = startingEntity;
         while (current != null) {
+            BlockPos currentPos = current.getHostingBlockEntity().getPos();
+
             for (Direction direction : Direction.values()) {
-                BlockApiCache<EnergyStorage, Direction> cache = current.getAdjacentCache(direction);
                 // Ignore blocks that are in unloaded chunks
                 // And avoid loading chunks by our search
-                if (!world.isChunkLoaded(cache.getPos())) {
+                if (!world.isChunkLoaded(currentPos.offset(direction))) {
                     continue;
                 }
 
+                BlockApiCache<EnergyStorage, Direction> cache = current.getAdjacentCache(direction);
+
                 if (cache.getBlockEntity() instanceof ConduitBundleBlockEntity conduitBundle) {
-                    ConduitEntity entity = conduitBundle.getConduitEntityOfType(backingConduit.Group, backingConduit.Tier);
-                    if (entity instanceof EnergyConduitEntity energyEntity) {
-                        if (energyEntity.network == null) {
-                            thisNetwork.conduits.add(energyEntity);
-                            queue.add(energyEntity);
-                            energyEntity.network = thisNetwork;
-                            continue;
+                    EnergyConduitEntity energyEntity = conduitBundle.getConduitOfType(EnergyConduitEntity.class);
+                    if (energyEntity == null) {
+                        // Bundle doesn't have an energy conduit
+                        continue;
+                    }
+
+                    if (energyEntity.network == null) {
+                        thisNetwork.conduits.add(energyEntity);
+                        queue.add(energyEntity);
+                        energyEntity.network = thisNetwork;
+                        continue;
+                    }
+                    if (energyEntity.network == thisNetwork) {
+                        // We got a loop
+                        // Just ignore this conduit
+                        continue;
+                    }
+
+                    // We found two networks that can be joined
+                    // This will happen, for example, if a chunk is re-loaded that has conduits in it
+                    //
+                    // Check if the other network has ticked yet
+                    if (energyEntity.network.tickCounter == globalTickCounter) {
+                        // The other network has already ticked
+                        // Add ourselves to the existing network and continue the breadth-first-search
+                        // It means these new conduits / targets won't be ticked this round,
+                        // but they will next tick, which is fine
+                        energyEntity.network.conduits.addAll(thisNetwork.conduits);
+                        energyEntity.network.targets.addAll(thisNetwork.targets);
+
+                        // Now clear and update the thisNetwork reference
+                        thisNetwork.conduits.clear();
+                        thisNetwork.targets.clear();
+                        thisNetwork = energyEntity.network;
+
+                        newNetwork = false;
+                    } else {
+                        // The other network hasn't ticked yet
+                        // Migrate all the conduits / targets from the other network into this one
+                        for (EnergyConduitEntity otherEntity : energyEntity.network.conduits) {
+                            otherEntity.network = thisNetwork;
+                            thisNetwork.conduits.add(otherEntity);
                         }
-                        if (energyEntity.network == thisNetwork) {
-                            // We got a loop
-                            // Just ignore this conduit
-                            continue;
-                        }
+                        thisNetwork.targets.addAll(energyEntity.network.targets);
 
-                        // We found two networks that can be joined
-                        // This will happen, for example, if a chunk is re-loaded that has conduits in it
-                        //
-                        // Check if the other network has ticked yet
-                        if (energyEntity.network.tickCounter == globalTickCounter) {
-                            // The other network has already ticked
-                            // Add ourselves to the existing network and continue the breadth-first-search
-                            // It means these new conduits / targets won't be ticked this round,
-                            // but they will next tick, which is fine
-                            energyEntity.network.conduits.addAll(thisNetwork.conduits);
-                            energyEntity.network.targets.addAll(thisNetwork.targets);
-
-                            // Now clear and update the thisNetwork reference
-                            thisNetwork.conduits.clear();
-                            thisNetwork.targets.clear();
-                            thisNetwork = energyEntity.network;
-
-                            newNetwork = false;
-                        } else {
-                            // The other network hasn't ticked yet
-                            // Migrate all the conduits / targets from the other network into this one
-                            for (EnergyConduitEntity otherEntity : energyEntity.network.conduits) {
-                                otherEntity.network = thisNetwork;
-                                thisNetwork.conduits.add(otherEntity);
-                            }
-                            thisNetwork.targets.addAll(energyEntity.network.targets);
-
-                            // And clear the network, just-in-case
-                            // It *should* become dereferenced by anything and GC'd
-                            // But we want to make sure entities aren't double ticked
-                            energyEntity.network.conduits.clear();
-                            energyEntity.network.targets.clear();
-                        }
+                        // And clear the network, just-in-case
+                        // It *should* become dereferenced by anything and GC'd
+                        // But we want to make sure entities aren't double ticked
+                        energyEntity.network.conduits.clear();
+                        energyEntity.network.targets.clear();
                     }
                 } else {
                     EnergyStorage target = cache.find(direction.getOpposite());

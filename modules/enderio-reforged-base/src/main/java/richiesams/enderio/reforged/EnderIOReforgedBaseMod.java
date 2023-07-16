@@ -30,9 +30,9 @@ public class EnderIOReforgedBaseMod implements ModInitializer {
 
         ExtendedVanilla.onInitialize();
 
-        ModConduits.registerConduits();
         ModBlocks.registerBlocks();
         ModBlockEntities.registerBlockEntities();
+        ModConduits.registerConduits();
         ModItems.registerItems();
         ModScreenHandlers.registerScreenHandlers();
         ModTags.Items.registerItemTags();

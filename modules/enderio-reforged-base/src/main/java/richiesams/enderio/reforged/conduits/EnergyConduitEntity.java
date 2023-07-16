@@ -14,7 +14,7 @@ import richiesams.enderio.reforged.blockentities.ConduitBundleBlockEntity;
 import team.reborn.energy.api.EnergyStorage;
 
 public class EnergyConduitEntity extends ConduitEntity {
-    public static String ConduitGroup = "energy";
+    public static final String ConduitGroup = "energy";
 
     private final BlockApiCache<EnergyStorage, Direction>[] adjacentCaches = new BlockApiCache[6];
     public EnergyConduitNetwork network;
@@ -22,8 +22,11 @@ public class EnergyConduitEntity extends ConduitEntity {
     public EnergyConduitEntity(Conduit conduit, ConduitBundleBlockEntity blockEntity) {
         super(conduit, blockEntity);
 
-        for (Direction direction : Direction.values()) {
-            adjacentCaches[direction.getId()] = BlockApiCache.create(EnergyStorage.SIDED, (ServerWorld) blockEntity.getWorld(), blockEntity.getPos().offset(direction));
+        World world = blockEntity.getWorld();
+        if (world instanceof ServerWorld serverWorld) {
+            for (Direction direction : Direction.values()) {
+                adjacentCaches[direction.getId()] = BlockApiCache.create(EnergyStorage.SIDED, serverWorld, blockEntity.getPos().offset(direction));
+            }
         }
     }
 
@@ -33,35 +36,6 @@ public class EnergyConduitEntity extends ConduitEntity {
 
         if (updateConnections) {
             for (Direction direction : Direction.values()) {
-                BlockApiCache<EnergyStorage, Direction> cache = getAdjacentCache(direction);
-                // Ignore blocks that are in unloaded chunks
-                // And avoid loading chunks by our search
-                if (!world.isChunkLoaded(cache.getPos())) {
-                    continue;
-                }
-
-                // Check if there is a connection to an EnergyStorage
-
-                EnergyStorage connectionTarget = cache.find(direction.getOpposite());
-                if (connectionTarget != null) {
-                    // If the target is a Conduit Bundle, check if it contains an energy conduit
-                    // If so, connect to it, with no termination or input/output rendering
-                    if (cache.getBlockEntity() instanceof ConduitBundleBlockEntity otherBlockEntity) {
-                        if (otherBlockEntity.getConduitEntityOfType("energy") != null) {
-                            connections.put(direction, new ConduitConnection(false, false, false));
-                            continue;
-                        }
-                    }
-
-                    // Now check if the target supports connections
-                    if (connectionTarget.supportsInsertion() || connectionTarget.supportsExtraction()) {
-                        connections.put(direction, new ConduitConnection(true, connectionTarget.supportsInsertion(), connectionTarget.supportsExtraction()));
-                        continue;
-                    }
-                } else {
-
-                }
-
                 // TODO: We'll need to use fabric API calls to actually check if the other entity contains a conduit
                 //       that we can connect to. Or a block that we can connect to
                 if (world.getBlockEntity(pos.offset(direction)) instanceof ConduitBundleBlockEntity otherBlockEntity) {

@@ -2,54 +2,58 @@ package richiesams.enderio.reforged.blockentities;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.renderer.v1.mesh.MutableQuadView;
+import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
 import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BeaconBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.*;
+import net.minecraft.client.render.block.entity.BeaconBlockEntityRenderer;
+import net.minecraft.client.render.model.json.ModelTransformation;
+import net.minecraft.client.texture.Sprite;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.Packet;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
+import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.Pair;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.function.BooleanBiFunction;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
-import richiesams.enderio.reforged.api.conduits.Conduit;
-import richiesams.enderio.reforged.api.conduits.ConduitConnection;
-import richiesams.enderio.reforged.api.conduits.ConduitEntity;
-import richiesams.enderio.reforged.api.conduits.ConduitOffset;
+import richiesams.enderio.reforged.api.conduits.*;
 import richiesams.enderio.reforged.items.ConduitItem;
-import richiesams.enderio.reforged.rendering.ConduitBundleRenderState;
 import richiesams.enderio.reforged.rendering.ConduitMeshHelper;
 import richiesams.enderio.reforged.rendering.ConduitShape;
 
 import java.util.*;
 
-public class ConduitBundleBlockEntity extends BlockEntity implements RenderAttachmentBlockEntity {
+public class ConduitBundleBlockEntity extends BlockEntity {
     private static final double coreCollisionExpansion = 0.25 / 16.0;
     private static final double connectionCollisionExpansion = 0.75 / 16.0;
 
     protected HashMap<UUID, ConduitEntity> conduitEntities;
-    protected HashMap<UUID, ConduitShape> conduitShapes;
+    protected List<ConduitShape> conduitShapes;
 
     public ConduitBundleBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.CONDUIT_BUNDLE, pos, state);
         this.conduitEntities = new HashMap<>();
-        this.conduitShapes = new HashMap<>();
+        this.conduitShapes = new ArrayList<>();
     }
 
     public static void tick(World world, BlockPos pos, BlockState state, ConduitBundleBlockEntity entity) {
@@ -123,31 +127,312 @@ public class ConduitBundleBlockEntity extends BlockEntity implements RenderAttac
     }
 
     @Nullable
-    public ConduitEntity getConduitEntityOfType(String group) {
+    public <T extends ConduitEntity> T getConduitOfType(Class<T> entityClass) {
         for (var entry : conduitEntities.entrySet()) {
             ConduitEntity entity = entry.getValue();
-            Conduit conduit = entity.getBackingConduit();
-            if (Objects.equals(group, conduit.Group)) {
-                return entity;
+            if (entityClass.isInstance(entity)) {
+                return entityClass.cast(entity);
             }
         }
 
         return null;
     }
 
-    @Nullable
-    public ConduitEntity getConduitEntityOfType(String group, int tier) {
-        for (var entry : conduitEntities.entrySet()) {
-            ConduitEntity entity = entry.getValue();
-            Conduit conduit = entity.getBackingConduit();
-            if (Objects.equals(group, conduit.Group) && tier == conduit.Tier) {
-                return entity;
+    @Environment(EnvType.CLIENT)
+    public void render(Map<Identifier, Sprite> spriteMap, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
+        matrices.push();
+
+        VertexConsumer vertexConsumer = vertexConsumers.getBuffer(TexturedRenderLayers.getEntityCutout());
+
+        MatrixStack.Entry entry = matrices.peek();
+        Matrix4f positionMatrix = entry.getPositionMatrix();
+
+        for (var shape : conduitShapes) {
+            Conduit backingConduit = shape.entity().getBackingConduit();
+
+            // First render the cores
+            for (var core : shape.cores()) {
+                renderCuboid(vertexConsumer, spriteMap, positionMatrix, core, backingConduit.CoreSprite);
+            }
+
+            // Then render the connectors
+
+            // Render the inner texture first, if it exists
+            ArrayList<SpriteReference> connectorSpriteRefs = new ArrayList<>();
+            if (backingConduit.ConnectorInnerSprite != null) {
+                connectorSpriteRefs.add(backingConduit.ConnectorInnerSprite);
+            }
+            connectorSpriteRefs.add(backingConduit.ConnectorOuterSprite);
+
+            for (var spriteRef : connectorSpriteRefs) {
+                Sprite sprite = spriteMap.get(spriteRef.identifier());
+
+                for (var connectionPair : shape.connections()) {
+                    Direction direction = connectionPair.getLeft();
+                    Box box = connectionPair.getRight();
+
+                    switch (direction) {
+                        case UP -> {
+                            renderCuboidFace(vertexConsumer, positionMatrix, Direction.NORTH, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_270);
+                            renderCuboidFace(vertexConsumer, positionMatrix, Direction.SOUTH, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_270);
+                            renderCuboidFace(vertexConsumer, positionMatrix, Direction.EAST, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_270);
+                            renderCuboidFace(vertexConsumer, positionMatrix, Direction.WEST, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_270);
+                        }
+                        case DOWN -> {
+                            renderCuboidFace(vertexConsumer, positionMatrix, Direction.NORTH, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_90);
+                            renderCuboidFace(vertexConsumer, positionMatrix, Direction.SOUTH, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_90);
+                            renderCuboidFace(vertexConsumer, positionMatrix, Direction.EAST, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_90);
+                            renderCuboidFace(vertexConsumer, positionMatrix, Direction.WEST, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_90);
+                        }
+                        case NORTH -> {
+                            renderCuboidFace(vertexConsumer, positionMatrix, Direction.EAST, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_0);
+                            renderCuboidFace(vertexConsumer, positionMatrix, Direction.WEST, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_180);
+                            renderCuboidFace(vertexConsumer, positionMatrix, Direction.UP, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_90);
+                            renderCuboidFace(vertexConsumer, positionMatrix, Direction.DOWN, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_270);
+                        }
+                        case SOUTH -> {
+                            renderCuboidFace(vertexConsumer, positionMatrix, Direction.EAST, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_180);
+                            renderCuboidFace(vertexConsumer, positionMatrix, Direction.WEST, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_0);
+                            renderCuboidFace(vertexConsumer, positionMatrix, Direction.UP, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_270);
+                            renderCuboidFace(vertexConsumer, positionMatrix, Direction.DOWN, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_90);
+                        }
+                        case EAST -> {
+                            renderCuboidFace(vertexConsumer, positionMatrix, Direction.NORTH, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_180);
+                            renderCuboidFace(vertexConsumer, positionMatrix, Direction.SOUTH, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_0);
+                            renderCuboidFace(vertexConsumer, positionMatrix, Direction.UP, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_180);
+                            renderCuboidFace(vertexConsumer, positionMatrix, Direction.DOWN, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_0);
+                        }
+                        case WEST -> {
+                            renderCuboidFace(vertexConsumer, positionMatrix, Direction.NORTH, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_0);
+                            renderCuboidFace(vertexConsumer, positionMatrix, Direction.SOUTH, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_180);
+                            renderCuboidFace(vertexConsumer, positionMatrix, Direction.UP, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_0);
+                            renderCuboidFace(vertexConsumer, positionMatrix, Direction.DOWN, box, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_180);
+                        }
+                    }
+                }
             }
         }
 
-        return null;
+
+
+
+        matrices.pop();
     }
 
+
+    private void renderCuboid(VertexConsumer vertexConsumer, Map<Identifier, Sprite> spriteMap, Matrix4f positionMatrix, Box cube, SpriteReference spriteRef) {
+        Sprite sprite = spriteMap.get(spriteRef.identifier());
+
+        // Render all the faces
+        for (Direction direction : Direction.values()) {
+            renderCuboidFace(vertexConsumer, positionMatrix, direction, cube, sprite, spriteRef.uvFrom(), spriteRef.uvTo(), Rotation.DEGREES_0);
+        }
+    }
+
+    private void renderCuboidFace(VertexConsumer vertexConsumer, Matrix4f positionMatrix, Direction direction, Box cube, Sprite sprite, Vec2f uvFrom, Vec2f uvTo, Rotation uvRotation) {
+        switch (direction) {
+            case DOWN -> {
+                renderQuad(vertexConsumer, positionMatrix, Direction.DOWN,
+                        new Vec3f((float) cube.maxX, (float) cube.minY, (float) cube.minZ),
+                        new Vec3f((float) cube.maxX, (float) cube.minY, (float) cube.maxZ),
+                        new Vec3f((float) cube.minX, (float) cube.minY, (float) cube.maxZ),
+                        new Vec3f((float) cube.minX, (float) cube.minY, (float) cube.minZ),
+                        sprite,
+                        uvFrom,
+                        uvTo,
+                        uvRotation
+                );
+            }
+            case UP -> {
+                renderQuad(vertexConsumer, positionMatrix, Direction.UP,
+                        new Vec3f((float) cube.maxX, (float) cube.maxY, (float) cube.maxZ),
+                        new Vec3f((float) cube.maxX, (float) cube.maxY, (float) cube.minZ),
+                        new Vec3f((float) cube.minX, (float) cube.maxY, (float) cube.minZ),
+                        new Vec3f((float) cube.minX, (float) cube.maxY, (float) cube.maxZ),
+                        sprite,
+                        uvFrom,
+                        uvTo,
+                        uvRotation
+                );
+            }
+            case NORTH -> {
+                renderQuad(vertexConsumer, positionMatrix, Direction.NORTH,
+                        new Vec3f((float) cube.maxX, (float) cube.maxY, (float) cube.minZ),
+                        new Vec3f((float) cube.maxX, (float) cube.minY, (float) cube.minZ),
+                        new Vec3f((float) cube.minX, (float) cube.minY, (float) cube.minZ),
+                        new Vec3f((float) cube.minX, (float) cube.maxY, (float) cube.minZ),
+                        sprite,
+                        uvFrom,
+                        uvTo,
+                        uvRotation
+                );
+            }
+            case SOUTH -> {
+                renderQuad(vertexConsumer, positionMatrix, Direction.SOUTH,
+                        new Vec3f((float) cube.minX, (float) cube.maxY, (float) cube.maxZ),
+                        new Vec3f((float) cube.minX, (float) cube.minY, (float) cube.maxZ),
+                        new Vec3f((float) cube.maxX, (float) cube.minY, (float) cube.maxZ),
+                        new Vec3f((float) cube.maxX, (float) cube.maxY, (float) cube.maxZ),
+                        sprite,
+                        uvFrom,
+                        uvTo,
+                        uvRotation
+                );
+            }
+            case WEST -> {
+                renderQuad(vertexConsumer, positionMatrix, Direction.WEST,
+                        new Vec3f((float) cube.minX, (float) cube.maxY, (float) cube.minZ),
+                        new Vec3f((float) cube.minX, (float) cube.minY, (float) cube.minZ),
+                        new Vec3f((float) cube.minX, (float) cube.minY, (float) cube.maxZ),
+                        new Vec3f((float) cube.minX, (float) cube.maxY, (float) cube.maxZ),
+                        sprite,
+                        uvFrom,
+                        uvTo,
+                        uvRotation
+                );
+            }
+            case EAST -> {
+                renderQuad(vertexConsumer, positionMatrix, Direction.EAST,
+                        new Vec3f((float) cube.maxX, (float) cube.maxY, (float) cube.maxZ),
+                        new Vec3f((float) cube.maxX, (float) cube.minY, (float) cube.maxZ),
+                        new Vec3f((float) cube.maxX, (float) cube.minY, (float) cube.minZ),
+                        new Vec3f((float) cube.maxX, (float) cube.maxY, (float) cube.minZ),
+                        sprite,
+                        uvFrom,
+                        uvTo,
+                        uvRotation
+                );
+            }
+        }
+    }
+
+    private void renderQuad(VertexConsumer vertexConsumer, Matrix4f positionMatrix, Direction nominalDirection,
+                            Vec3f vertex0, Vec3f vertex1, Vec3f vertex2, Vec3f vertex3,
+                            Sprite sprite, Vec2f uvFrom, Vec2f uvTo, Rotation uvRotation) {
+        // Shift the UV range to fit within the range of the sprite within the atlas
+        final float uMin = sprite.getMinU();
+        final float uSpan = sprite.getMaxU() - uMin;
+        final float vMin = sprite.getMinV();
+        final float vSpan = sprite.getMaxV() - vMin;
+
+        // Vertex 0
+        Vec2f uv0 = getSpriteUV(0, uvFrom, uvTo, uvRotation);
+        vertexConsumer.vertex(positionMatrix, vertex0.getX(), vertex0.getY(), vertex0.getZ())
+                .color(1.0f, 1.0f, 1.0f, 1.0f)
+                .texture(uMin+ uv0.x * uSpan, vMin + uv0.y * vSpan)
+                .overlay(OverlayTexture.DEFAULT_UV)
+                .light(15728880)
+                .normal(nominalDirection.getOffsetX(), nominalDirection.getOffsetY(), nominalDirection.getOffsetZ())
+                .next();
+
+        // Vertex 1
+        Vec2f uv1 = getSpriteUV(1, uvFrom, uvTo, uvRotation);
+        vertexConsumer.vertex(positionMatrix, vertex1.getX(), vertex1.getY(), vertex1.getZ())
+                .color(1.0f, 1.0f, 1.0f, 1.0f)
+                .texture(uMin+ uv1.x * uSpan, vMin + uv1.y * vSpan)
+                .overlay(OverlayTexture.DEFAULT_UV)
+                .light(15728880)
+                .normal(nominalDirection.getOffsetX(), nominalDirection.getOffsetY(), nominalDirection.getOffsetZ())
+                .next();
+
+        // Vertex 2
+        Vec2f uv2 = getSpriteUV(2, uvFrom, uvTo, uvRotation);
+        vertexConsumer.vertex(positionMatrix, vertex2.getX(), vertex2.getY(), vertex2.getZ())
+                .color(1.0f, 1.0f, 1.0f, 1.0f)
+                .texture(uMin+ uv2.x * uSpan, vMin + uv2.y * vSpan)
+                .overlay(OverlayTexture.DEFAULT_UV)
+                .light(15728880)
+                .normal(nominalDirection.getOffsetX(), nominalDirection.getOffsetY(), nominalDirection.getOffsetZ())
+                .next();
+
+        // Vertex 3
+        Vec2f uv3 = getSpriteUV(3, uvFrom, uvTo, uvRotation);
+        vertexConsumer.vertex(positionMatrix, vertex3.getX(), vertex3.getY(), vertex3.getZ())
+                .color(1.0f, 1.0f, 1.0f, 1.0f)
+                .texture(uMin+ uv3.x * uSpan, vMin + uv3.y * vSpan)
+                .overlay(OverlayTexture.DEFAULT_UV)
+                .light(15728880)
+                .normal(nominalDirection.getOffsetX(), nominalDirection.getOffsetY(), nominalDirection.getOffsetZ())
+                .next();
+    }
+
+    private Vec2f getSpriteUV(int vertex, Vec2f uvFrom, Vec2f uvTo, Rotation rotation) {
+        Vec2f uv0 = new Vec2f(uvFrom.x, uvFrom.y);
+        Vec2f uv1 = new Vec2f(uvFrom.x, uvTo.y);
+        Vec2f uv2 = new Vec2f(uvTo.x, uvTo.y);
+        Vec2f uv3 = new Vec2f(uvTo.x, uvFrom.y);
+
+        switch (rotation) {
+            case DEGREES_0 -> {
+                return switch (vertex) {
+                    case 0 -> uv0;
+                    case 1 -> uv1;
+                    case 2 -> uv2;
+                    case 3 -> uv3;
+                    default -> throw new RuntimeException("Invalid vertex index");
+                };
+            }
+            case DEGREES_90 -> {
+                switch (vertex) {
+                    case 0 -> {
+                        return new Vec2f(uv1.x, uv1.y);
+                    }
+                    case 1 -> {
+                        return new Vec2f(uv2.x, uv2.y);
+                    }
+                    case 2 -> {
+                        return new Vec2f(uv3.x, uv3.y);
+                    }
+                    case 3 -> {
+                        return new Vec2f(uv0.x, uv0.y);
+                    }
+                    default -> throw new RuntimeException("Invalid vertex index");
+                }
+            }
+            case DEGREES_180 -> {
+                switch (vertex) {
+                    case 0 -> {
+                        return new Vec2f(uv2.x, uv2.y);
+                    }
+                    case 1 -> {
+                        return new Vec2f(uv3.x, uv3.y);
+                    }
+                    case 2 -> {
+                        return new Vec2f(uv0.x, uv0.y);
+                    }
+                    case 3 -> {
+                        return new Vec2f(uv1.x, uv1.y);
+                    }
+                    default -> throw new RuntimeException("Invalid vertex index");
+                }
+            }
+            case DEGREES_270 -> {
+                switch (vertex) {
+                    case 0 -> {
+                        return new Vec2f(uv3.x, uv3.y);
+                    }
+                    case 1 -> {
+                        return new Vec2f(uv0.x, uv0.y);
+                    }
+                    case 2 -> {
+                        return new Vec2f(uv1.x, uv1.y);
+                    }
+                    case 3 -> {
+                        return new Vec2f(uv2.x, uv2.y);
+                    }
+                    default -> throw new RuntimeException("Invalid vertex index");
+                }
+            }
+            default -> throw new RuntimeException("Invalid rotation");
+        }
+    }
+    
+    public enum Rotation {
+        DEGREES_0,
+        DEGREES_90,
+        DEGREES_180,
+        DEGREES_270
+    }
 
     private void regenerateShapes() {
         conduitShapes.clear();
@@ -158,7 +443,6 @@ public class ConduitBundleBlockEntity extends BlockEntity implements RenderAttac
         }
 
         for (Map.Entry<UUID, ConduitEntity> entry : conduitEntities.entrySet()) {
-            UUID uuid = entry.getKey();
             ConduitEntity conduitEntity = entry.getValue();
 
             Conduit backingConduit = conduitEntity.getBackingConduit();
@@ -197,7 +481,7 @@ public class ConduitBundleBlockEntity extends BlockEntity implements RenderAttac
 
             List<Box> coreShapes = coreOffsets.stream().map((ConduitMeshHelper::CoreFromOffset)).toList();
 
-            conduitShapes.put(uuid, new ConduitShape(coreShapes, connectionShapes));
+            conduitShapes.add(new ConduitShape(conduitEntity, coreShapes, connectionShapes));
         }
     }
 
@@ -244,20 +528,6 @@ public class ConduitBundleBlockEntity extends BlockEntity implements RenderAttac
     @Override
     public NbtCompound toInitialChunkDataNbt() {
         return createNbt();
-    }
-
-    @Environment(EnvType.CLIENT)
-    @Override
-    public Object getRenderAttachmentData() {
-        List<ConduitBundleRenderState.ConduitRenderState> renderStates =
-                conduitEntities.entrySet().stream().map(
-                        (Map.Entry<UUID, ConduitEntity> entry) -> new ConduitBundleRenderState.ConduitRenderState(
-                                entry.getValue().getBackingConduit(),
-                                conduitShapes.get(entry.getKey())
-                        )
-                ).toList();
-
-        return new ConduitBundleRenderState(renderStates);
     }
 
     public void neighborUpdate() {
@@ -310,7 +580,7 @@ public class ConduitBundleBlockEntity extends BlockEntity implements RenderAttac
             }
         }
 
-        for (ConduitShape conduitShape : conduitShapes.values()) {
+        for (ConduitShape conduitShape : conduitShapes) {
             for (Box box : conduitShape.cores()) {
                 Box expandedBox = box.expand(coreCollisionExpansion);
 
@@ -351,7 +621,7 @@ public class ConduitBundleBlockEntity extends BlockEntity implements RenderAttac
         }
 
         ArrayList<VoxelShape> shapes = new ArrayList<>();
-        for (ConduitShape conduitShape : conduitShapes.values()) {
+        for (ConduitShape conduitShape : conduitShapes) {
             for (Box box : conduitShape.cores()) {
                 shapes.add(VoxelShapes.cuboid(box.expand(coreCollisionExpansion)));
             }

@@ -24,7 +24,7 @@ public class ConduitBundleBlock extends BlockWithEntity implements BlockEntityPr
 
     @Override
     public BlockRenderType getRenderType(BlockState state) {
-        return BlockRenderType.MODEL;
+        return BlockRenderType.INVISIBLE;
     }
 
     @Nullable
