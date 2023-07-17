@@ -2,26 +2,21 @@ package richiesams.enderio.reforged.blockentities;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.renderer.v1.mesh.MutableQuadView;
-import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
-import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BeaconBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.*;
-import net.minecraft.client.render.block.entity.BeaconBlockEntityRenderer;
-import net.minecraft.client.render.model.json.ModelTransformation;
+import net.minecraft.client.render.OverlayTexture;
+import net.minecraft.client.render.TexturedRenderLayers;
+import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.Packet;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
-import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
@@ -44,8 +39,8 @@ import richiesams.enderio.reforged.rendering.ConduitShape;
 import java.util.*;
 
 public class ConduitBundleBlockEntity extends BlockEntity {
-    private static final double coreCollisionExpansion = 0.25 / 16.0;
-    private static final double connectionCollisionExpansion = 0.75 / 16.0;
+    private static final double coreHitboxExpansion = 0.25 / 16.0;
+    private static final double connectionHitboxExpansion = 0.75 / 16.0;
 
     protected HashMap<UUID, ConduitEntity> conduitEntities;
     protected List<ConduitShape> conduitShapes;
@@ -68,7 +63,6 @@ public class ConduitBundleBlockEntity extends BlockEntity {
 
         if (markDirty) {
             entity.markDirty();
-            world.updateListeners(pos, state, state, Block.NOTIFY_LISTENERS);
         }
     }
 
@@ -107,7 +101,6 @@ public class ConduitBundleBlockEntity extends BlockEntity {
 
                         conduitEntities.put(uuid, newConduitEntity);
                         markDirty();
-                        world.updateListeners(pos, world.getBlockState(pos), world.getBlockState(pos), Block.NOTIFY_LISTENERS);
                         conduitEntity.markConnectionsDirty();
 
                         return true;
@@ -119,11 +112,17 @@ public class ConduitBundleBlockEntity extends BlockEntity {
 
             conduitEntities.put(UUID.randomUUID(), conduit.createConduitEntity(this));
             markDirty();
-            world.updateListeners(pos, world.getBlockState(pos), world.getBlockState(pos), Block.NOTIFY_LISTENERS);
             return true;
         }
 
         return false;
+    }
+
+    @Override
+    public void markDirty() {
+        super.markDirty();
+        world.updateListeners(pos, world.getBlockState(pos), world.getBlockState(pos), Block.NOTIFY_LISTENERS);
+        regenerateShapes();
     }
 
     @Nullable
@@ -426,7 +425,7 @@ public class ConduitBundleBlockEntity extends BlockEntity {
             default -> throw new RuntimeException("Invalid rotation");
         }
     }
-    
+
     public enum Rotation {
         DEGREES_0,
         DEGREES_90,
@@ -435,7 +434,7 @@ public class ConduitBundleBlockEntity extends BlockEntity {
     }
 
     private void regenerateShapes() {
-        conduitShapes.clear();
+        List<ConduitShape> newConduitShapes = new ArrayList<>();
 
         ConduitOffset overrideOffset = null;
         if (conduitEntities.size() == 1) {
@@ -481,8 +480,10 @@ public class ConduitBundleBlockEntity extends BlockEntity {
 
             List<Box> coreShapes = coreOffsets.stream().map((ConduitMeshHelper::CoreFromOffset)).toList();
 
-            conduitShapes.add(new ConduitShape(conduitEntity, coreShapes, connectionShapes));
+            newConduitShapes.add(new ConduitShape(conduitEntity, coreShapes, connectionShapes));
         }
+
+        conduitShapes = newConduitShapes;
     }
 
     @Override
@@ -497,13 +498,7 @@ public class ConduitBundleBlockEntity extends BlockEntity {
         }
 
         conduitEntities = newConduits;
-
-        // TODO: Only trigger block update if the model actually changed
-        if (getWorld() != null && getWorld().isClient) {
-            // Trigger the model to be rebuilt
-            regenerateShapes();
-            MinecraftClient.getInstance().worldRenderer.scheduleBlockRenders(pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ());
-        }
+        regenerateShapes();
     }
 
     @Override
@@ -537,76 +532,69 @@ public class ConduitBundleBlockEntity extends BlockEntity {
     }
 
     public VoxelShape getOutlineShape() {
-        // Fail-safe
-        if (conduitEntities.size() == 0) {
-            return VoxelShapes.fullCube();
-        }
-
         MinecraftClient client = MinecraftClient.getInstance();
         HitResult hit = client.crosshairTarget;
 
-        if (hit == null) {
-            return getCollisionShape();
-        }
-        if (hit.getType() != HitResult.Type.BLOCK) {
-            return getCollisionShape();
-        }
-        BlockHitResult blockHit = (BlockHitResult) hit;
-        if (!(world.getBlockEntity(blockHit.getBlockPos()) instanceof ConduitBundleBlockEntity)) {
-            return getCollisionShape();
-        }
-
-        Vec3d hitPos = blockHit.getPos();
-        hitPos = hitPos.subtract(Vec3d.of(blockHit.getBlockPos()));
-
-        switch (blockHit.getSide()) {
-            case DOWN -> {
-                hitPos = hitPos.add(0.0, 0.01, 0.0);
-            }
-            case UP -> {
-                hitPos = hitPos.add(0.0, -0.01, 0.0);
-            }
-            case NORTH -> {
-                hitPos = hitPos.add(0.0, 0.0, 0.01);
-            }
-            case SOUTH -> {
-                hitPos = hitPos.add(0.0, 0.0, -0.01);
-            }
-            case WEST -> {
-                hitPos = hitPos.add(0.01, 0.0, 0.0);
-            }
-            case EAST -> {
-                hitPos = hitPos.add(-0.01, 0.0, 0.0);
-            }
-        }
-
-        for (ConduitShape conduitShape : conduitShapes) {
-            for (Box box : conduitShape.cores()) {
-                Box expandedBox = box.expand(coreCollisionExpansion);
-
-                if (expandedBox.contains(hitPos)) {
-                    return VoxelShapes.cuboid(expandedBox);
+        if (hit instanceof BlockHitResult blockHit) {
+            if (world.getBlockEntity(blockHit.getBlockPos()) instanceof ConduitBundleBlockEntity blockEntity) {
+                // Fail safe
+                if (blockEntity.conduitEntities.size() == 0 || blockEntity.conduitShapes.size() == 0) {
+                    return VoxelShapes.empty();
                 }
-            }
-            for (Pair<Direction, Box> pair : conduitShape.connections()) {
-                Box box;
-                switch (pair.getLeft()) {
-                    case UP, DOWN -> {
-                        box = pair.getRight().expand(connectionCollisionExpansion, 0.0, connectionCollisionExpansion);
+
+                Vec3d hitPos = blockHit.getPos();
+                hitPos = hitPos.subtract(Vec3d.of(blockHit.getBlockPos()));
+
+                switch (blockHit.getSide()) {
+                    case DOWN -> {
+                        hitPos = hitPos.add(0.0, 0.01, 0.0);
                     }
-                    case NORTH, SOUTH -> {
-                        box = pair.getRight().expand(connectionCollisionExpansion, connectionCollisionExpansion, 0.0);
+                    case UP -> {
+                        hitPos = hitPos.add(0.0, -0.01, 0.0);
                     }
-                    case EAST, WEST -> {
-                        box = pair.getRight().expand(0.0, connectionCollisionExpansion, connectionCollisionExpansion);
+                    case NORTH -> {
+                        hitPos = hitPos.add(0.0, 0.0, 0.01);
                     }
-                    default -> {
-                        throw new RuntimeException("Unknown direction %s".formatted(pair.getLeft()));
+                    case SOUTH -> {
+                        hitPos = hitPos.add(0.0, 0.0, -0.01);
+                    }
+                    case WEST -> {
+                        hitPos = hitPos.add(0.01, 0.0, 0.0);
+                    }
+                    case EAST -> {
+                        hitPos = hitPos.add(-0.01, 0.0, 0.0);
                     }
                 }
 
-                if (box.contains(hitPos)) {
-                    return VoxelShapes.cuboid(box);
+                for (ConduitShape conduitShape : blockEntity.conduitShapes) {
+                    for (Box box : conduitShape.cores()) {
+                        Box expandedBox = box.expand(coreHitboxExpansion);
+
+                        if (expandedBox.contains(hitPos)) {
+                            return VoxelShapes.cuboid(expandedBox);
+                        }
+                    }
+                    for (Pair<Direction, Box> pair : conduitShape.connections()) {
+                        Box box;
+                        switch (pair.getLeft()) {
+                            case UP, DOWN -> {
+                                box = pair.getRight().expand(connectionHitboxExpansion, 0.0, connectionHitboxExpansion);
+                            }
+                            case NORTH, SOUTH -> {
+                                box = pair.getRight().expand(connectionHitboxExpansion, connectionHitboxExpansion, 0.0);
+                            }
+                            case EAST, WEST -> {
+                                box = pair.getRight().expand(0.0, connectionHitboxExpansion, connectionHitboxExpansion);
+                            }
+                            default -> {
+                                throw new RuntimeException("Unknown direction %s".formatted(pair.getLeft()));
+                            }
+                        }
+
+                        if (box.contains(hitPos)) {
+                            return VoxelShapes.cuboid(box);
+                        }
+                    }
                 }
             }
         }
@@ -616,27 +604,23 @@ public class ConduitBundleBlockEntity extends BlockEntity {
 
     public VoxelShape getCollisionShape() {
         // Fail-safe
-        if (conduitEntities.size() == 0) {
+        if (conduitEntities.size() == 0 || conduitShapes.size() == 0) {
             return VoxelShapes.fullCube();
         }
 
         ArrayList<VoxelShape> shapes = new ArrayList<>();
-        for (ConduitShape conduitShape : conduitShapes) {
-            for (Box box : conduitShape.cores()) {
-                shapes.add(VoxelShapes.cuboid(box.expand(coreCollisionExpansion)));
+        for (ConduitShape shape : conduitShapes) {
+            for (var core : shape.cores()) {
+                shapes.add(VoxelShapes.cuboid(core.expand(coreHitboxExpansion)));
             }
-            for (Pair<Direction, Box> pair : conduitShape.connections()) {
-                switch (pair.getLeft()) {
-                    case UP, DOWN -> {
-                        shapes.add(VoxelShapes.cuboid(pair.getRight().expand(connectionCollisionExpansion, 0.0, connectionCollisionExpansion)));
-                    }
-                    case NORTH, SOUTH -> {
-                        shapes.add(VoxelShapes.cuboid(pair.getRight().expand(connectionCollisionExpansion, connectionCollisionExpansion, 0.0)));
-                    }
-                    case EAST, WEST -> {
-                        shapes.add(VoxelShapes.cuboid(pair.getRight().expand(0.0, connectionCollisionExpansion, connectionCollisionExpansion)));
-                    }
-                }
+
+            for (var connectionPair : shape.connections()) {
+                // Expand and clamp the connection boxes to the cube boundaries
+                var box = connectionPair.getRight().expand(connectionHitboxExpansion);
+                shapes.add(VoxelShapes.cuboid(
+                        Math.max(box.minX, 0.0), Math.max(box.minY, 0.0), Math.max(box.minZ, 0.0),
+                        Math.min(box.maxX, 1.0), Math.min(box.maxY, 1.0), Math.min(box.maxZ, 1.0)
+                ));
             }
         }
 

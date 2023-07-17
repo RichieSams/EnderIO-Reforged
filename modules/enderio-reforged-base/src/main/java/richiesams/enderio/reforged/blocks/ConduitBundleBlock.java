@@ -24,6 +24,7 @@ public class ConduitBundleBlock extends BlockWithEntity implements BlockEntityPr
 
     @Override
     public BlockRenderType getRenderType(BlockState state) {
+        // Invisible, because we render using a BlockEntityRenderer
         return BlockRenderType.INVISIBLE;
     }
 
